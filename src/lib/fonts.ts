@@ -26,6 +26,10 @@ export const FONTS: FontDef[] = [
 
 const loaded = new Set<string>()
 
+// Font families are interpolated into CSS/URLs; only allow the characters used
+// by real font names.
+const SAFE_FAMILY_RE = /^[\w \-]+$/
+
 function fontKey(family: string, weights: number[]): string {
   return `${family}:${weights.join(",")}`
 }
@@ -35,8 +39,8 @@ export function ensureFontLoaded(family: string, weights: number[] = [400]): voi
   const key = fontKey(family, weights)
   if (loaded.has(key)) return
   loaded.add(key)
-  const enabled = weights.length ? weights : [400]
-  const spec = `${family.replace(/ /g, "+")}:wght@${enabled.sort((a, b) => a - b).join(";")}`
+  const enabled = (weights.length ? weights : [400]).slice().sort((a, b) => a - b)
+  const spec = `${family.replace(/ /g, "+")}:wght@${enabled.join(";")}`
   const url = `https://fonts.googleapis.com/css2?family=${spec}&display=swap`
   const link = document.createElement("link")
   link.rel = "stylesheet"
@@ -68,7 +72,7 @@ export async function buildFontEmbedCSS(families: string[]): Promise<string> {
   if (embedCache && families.every((f) => embedCache.includes(`font-family:'${f}'`))) {
     return embedCache
   }
-  const unique = Array.from(new Set(families.filter(Boolean)))
+  const unique = Array.from(new Set(families.filter((f) => SAFE_FAMILY_RE.test(f))))
   const parts: string[] = []
   await Promise.all(
     unique.map(async (family) => {

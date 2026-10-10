@@ -37,6 +37,10 @@ export function getBounds(el: Element): Bounds {
       rotation: 0,
     }
   }
+  if (el.type === "stroke") {
+    // Derive from points so bounds never go stale after transforms.
+    return boundsOfPoints(el.points)
+  }
   return { x: el.x, y: el.y, width: el.width, height: el.height, rotation: el.rotation }
 }
 

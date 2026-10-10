@@ -5,7 +5,9 @@ export const LUCIDE_NAMES: string[] = Object.keys(lucideIcons).sort((a, b) =>
 )
 
 export function getLucideIcon(name: string): LucideIcon | undefined {
-  return (lucideIcons as Record<string, LucideIcon>)[name]
+  const icons = lucideIcons as Record<string, LucideIcon>
+  // Guard against prototype keys like "__proto__" / "constructor".
+  return Object.prototype.hasOwnProperty.call(icons, name) ? icons[name] : undefined
 }
 
 export interface MaterialIconData {
@@ -16,35 +18,82 @@ export interface MaterialIconData {
 const materialCache = new Map<string, MaterialIconData | null>()
 const materialPending = new Map<string, Promise<MaterialIconData | null>>()
 
-const MATERIAL_BASE =
-  "https://fonts.gstatic.com/s/i/short-term/release/materialsymbolsoutlined"
+const MATERIAL_HOST = "https://fonts.gstatic.com/s/i/short-term/release"
 
-export async function loadMaterialIcon(name: string): Promise<MaterialIconData | null> {
-  if (materialCache.has(name)) return materialCache.get(name) ?? null
-  if (materialPending.has(name)) return materialPending.get(name) ?? null
+// Material icon names are simple identifiers; reject anything else before it
+// is interpolated into the upstream URL.
+const MATERIAL_NAME_RE = /^[a-z0-9_]+$/i
+
+const DANGEROUS_SVG_ELEMENTS = new Set([
+  "script",
+  "foreignobject",
+  "iframe",
+  "object",
+  "embed",
+  "link",
+  "meta",
+  "base",
+])
+
+/**
+ * Defense in depth for third-party SVG. Material icon markup is injected with
+ * dangerouslySetInnerHTML, so strip anything that could execute or navigate.
+ */
+function sanitizeSvgInner(svg: SVGSVGElement): string {
+  for (const node of Array.from(svg.querySelectorAll("*"))) {
+    if (DANGEROUS_SVG_ELEMENTS.has(node.tagName.toLowerCase())) {
+      node.remove()
+      continue
+    }
+    for (const attr of Array.from(node.attributes)) {
+      const attrName = attr.name.toLowerCase()
+      const value = attr.value.trim().toLowerCase()
+      if (attrName.startsWith("on")) {
+        node.removeAttribute(attr.name)
+      } else if (
+        (attrName === "href" || attrName === "xlink:href" || attrName === "src") &&
+        /^(?:javascript|vbscript|data:text\/html):/.test(value)
+      ) {
+        node.removeAttribute(attr.name)
+      }
+    }
+  }
+  return svg.innerHTML
+}
+
+export async function loadMaterialIcon(
+  name: string,
+  opts: { filled?: boolean; rounded?: boolean } = {}
+): Promise<MaterialIconData | null> {
+  const family = opts.rounded ? "materialsymbolsrounded" : "materialsymbolsoutlined"
+  const variant = opts.filled ? "fill1" : "default"
+  if (!MATERIAL_NAME_RE.test(name)) return null
+  const key = `${family}/${variant}/${name}`
+  if (materialCache.has(key)) return materialCache.get(key) ?? null
+  if (materialPending.has(key)) return materialPending.get(key) ?? null
 
   const promise = (async (): Promise<MaterialIconData | null> => {
     try {
-      const res = await fetch(`${MATERIAL_BASE}/${name}/default/24px.svg`)
+      const res = await fetch(`${MATERIAL_HOST}/${family}/${name}/${variant}/24px.svg`)
       if (!res.ok) throw new Error("not found")
       const text = await res.text()
       const doc = new DOMParser().parseFromString(text, "image/svg+xml")
       const svg = doc.querySelector("svg")
       if (!svg) throw new Error("bad svg")
       const viewBox = svg.getAttribute("viewBox") ?? "0 -960 960 960"
-      const inner = svg.innerHTML
+      const inner = sanitizeSvgInner(svg)
       const data = { viewBox, inner }
-      materialCache.set(name, data)
+      materialCache.set(key, data)
       return data
     } catch {
-      materialCache.set(name, null)
+      materialCache.set(key, null)
       return null
     } finally {
-      materialPending.delete(name)
+      materialPending.delete(key)
     }
   })()
 
-  materialPending.set(name, promise)
+  materialPending.set(key, promise)
   return promise
 }
 

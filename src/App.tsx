@@ -1,10 +1,12 @@
 import { useEffect } from "react"
 import { Canvas } from "@/components/canvas/Canvas"
+import { CoffeeButton } from "@/components/CoffeeButton"
 import { Toolbar } from "@/components/Toolbar"
 import { TopBar } from "@/components/TopBar"
 import { PropertiesPanel } from "@/components/PropertiesPanel"
 import { LayersPanel } from "@/components/LayersPanel"
 import { TooltipProvider } from "@/components/ui/tooltip"
+import { Toaster } from "./components/ui/toast"
 import { Loader2 } from "lucide-react"
 import { useUI } from "@/store/useUI"
 import { useDoc } from "@/store/useDoc"
@@ -44,12 +46,14 @@ export default function App() {
         <PropertiesPanel />
         {layersOpen && <LayersPanel />}
         <Toolbar />
+        <CoffeeButton />
         {!projectId && (
           <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/70 backdrop-blur-sm">
             <Loader2 className="size-6 animate-spin text-muted-foreground" />
           </div>
         )}
-      </div>
+          </div>
+          <Toaster />
     </TooltipProvider>
   )
 }

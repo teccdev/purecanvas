@@ -21,7 +21,9 @@ export function useAutosave() {
           camera,
           updatedAt: Date.now(),
         })
-      })()
+      })().catch(() => {
+        /* ignore transient persistence errors */
+      })
     }, 700)
     return () => clearTimeout(timer)
   }, [projectId, projectName, elements, camera])

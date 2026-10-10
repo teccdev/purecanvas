@@ -19,12 +19,10 @@ export function IconPicker({
   lib,
   name,
   onChange,
-  color = "currentColor",
 }: {
   lib: IconLib
   name: string
   onChange: (lib: IconLib, name: string) => void
-  color?: string
 }) {
   const [open, setOpen] = useState(false)
   const [tab, setTab] = useState<IconLib>(lib)
@@ -51,9 +49,9 @@ export function IconPicker({
           <Button variant="outline" className="w-full justify-between">
             <span className="flex items-center gap-2 truncate">
               {lib === "lucide" && Current ? (
-                <Current className="size-4" style={{ color }} />
+                <Current className="size-4 text-foreground" />
               ) : (
-                <img src={materialUrl(name)} alt="" className="size-4" />
+                <img src={materialUrl(name)} alt="" className="size-4 dark:invert" />
               )}
               <span className="truncate">{name}</span>
             </span>

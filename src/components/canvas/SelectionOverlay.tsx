@@ -36,7 +36,7 @@ export function SelectionOverlay() {
   const selectedIds = useUI((s) => s.selectedIds)
   const editingTextId = useUI((s) => s.editingTextId)
 
-  const selected = elements.filter((e) => selectedIds.includes(e.id))
+  const selected = elements.filter((e) => selectedIds.includes(e.id) && !e.hidden)
   if (selected.length === 0) return null
 
   const isSingle = selected.length === 1
@@ -45,6 +45,12 @@ export function SelectionOverlay() {
     single && single.type !== "line" && single.type !== "stroke"
       ? getBounds(single)
       : (unionBounds(selected) as Bounds)
+
+  const toPoly = (b: Bounds) =>
+    boundsCorners(b)
+      .map((p) => worldToScreen(p, camera))
+      .map((p) => `${p.x},${p.y}`)
+      .join(" ")
 
   const corners = boundsCorners(bounds)
   const screenCorners = corners.map((p) => worldToScreen(p, camera))
@@ -79,6 +85,17 @@ export function SelectionOverlay() {
 
   return (
     <g id="selection-overlay" pointerEvents="none">
+      {!isSingle &&
+        selected.map((el) => (
+          <polygon
+            key={el.id}
+            points={toPoly(getBounds(el))}
+            fill="none"
+            stroke="var(--ring)"
+            strokeWidth={1}
+            opacity={0.7}
+          />
+        ))}
       <polygon
         points={polyPoints}
         fill="none"

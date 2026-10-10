@@ -33,20 +33,20 @@ server, no uploads.
 
 ## Keyboard shortcuts
 
-| Shortcut | Action |
-| --- | --- |
-| `V` `T` `I` `L` `R` `O` `P` | Select / Text / Image / Line / Shape / Icon / Pen |
-| `P` (repeated) | Cycle pen → highlighter → eraser |
-| `E` | Eraser |
-| `Ctrl/⌘ + Z` / `Shift + Ctrl/⌘ + Z` | Undo / redo |
-| `Ctrl/⌘ + D` | Duplicate |
-| `Ctrl/⌘ + A` | Select all |
-| `Ctrl/⌘ + C` / `Ctrl/⌘ + V` | Copy / paste |
-| `Ctrl/⌘ + =` / `-` / `0` | Zoom in / out / reset |
-| `Delete` / `Backspace` | Delete selection |
-| `Esc` | Exit text editing, then clear selection |
-| Arrow keys | Nudge (hold `Shift` for a larger step) |
-| Space (hold) | Pan |
+| Shortcut                            | Action                                            |
+| ----------------------------------- | ------------------------------------------------- |
+| `V` `T` `I` `L` `R` `O` `P`         | Select / Text / Image / Line / Shape / Icon / Pen |
+| `P` (repeated)                      | Cycle pen → highlighter → eraser                  |
+| `E`                                 | Eraser                                            |
+| `Ctrl/⌘ + Z` / `Shift + Ctrl/⌘ + Z` | Undo / redo                                       |
+| `Ctrl/⌘ + D`                        | Duplicate                                         |
+| `Ctrl/⌘ + A`                        | Select all                                        |
+| `Ctrl/⌘ + C` / `Ctrl/⌘ + V`         | Copy / paste                                      |
+| `Ctrl/⌘ + =` / `-` / `0`            | Zoom in / out / reset                             |
+| `Delete` / `Backspace`              | Delete selection                                  |
+| `Esc`                               | Exit text editing, then clear selection           |
+| Arrow keys                          | Nudge (hold `Shift` for a larger step)            |
+| Space (hold)                        | Pan                                               |
 
 ## Development
 
@@ -62,6 +62,21 @@ npm run preview  # preview the production build
 The app is a static SPA and deploys to [Vercel](https://vercel.com) with no
 configuration beyond the included `vercel.json`. Import the repository, and
 Vercel detects Vite, runs `npm run build`, and serves `dist/`.
+
+Stock image search is served by the `api/pixabay.ts` serverless function at
+`/api/pixabay`. `vercel.json` routes `/api/:path*` to that function _before_ the
+SPA catch-all rewrite, so API requests are not swallowed by `/(.*) ->
+/index.html`.
+
+### Environment variables
+
+`api/pixabay.ts` reads its Pixabay API key from `PIXABAY_KEY` via
+`process.env.PIXABAY_KEY`. **You must set `PIXABAY_KEY` as an environment
+variable in the Vercel project** (Project Settings → Environment Variables) for
+the deployed proxy to work — without it the function returns HTTP 500
+`PIXABAY_KEY environment variable is not set`. Set it for the environments you
+deploy to (Production, Preview, Development, as needed). Locally, put it in an
+untracked `.env` file (already in `.gitignore` — never commit it).
 
 ## Tech
 

@@ -2,6 +2,8 @@ import { create } from "zustand"
 import type { Camera, Element } from "@/lib/types"
 import { uid } from "@/lib/id"
 import { useUI } from "@/store/useUI"
+import { translateElement } from "@/lib/transform"
+import { dissolveSingletonGroups, remapGroupIds } from "@/lib/groups"
 
 const HISTORY_LIMIT = 120
 
@@ -28,6 +30,10 @@ interface DocState {
   removeElements: (ids: string[]) => void
   duplicateElements: (ids: string[]) => void
   moveLayer: (id: string, toIndex: number) => void
+  reorderLayers: (ids: string[], dir: "up" | "down" | "top" | "bottom") => void
+  groupElements: (ids: string[]) => void
+  ungroupElements: (ids: string[]) => void
+  renameGroup: (groupId: string, name: string) => void
 
   pushHistory: () => void
   undo: () => void
@@ -38,6 +44,39 @@ const defaultCamera: Camera = { x: 0, y: 0, zoom: 1 }
 
 function clone(els: Element[]): Element[] {
   return structuredClone(els)
+}
+
+/** Later indexes paint on top. `up` moves toward the front. */
+function reorderElements(
+  elements: Element[],
+  ids: string[],
+  dir: "up" | "down" | "top" | "bottom"
+): Element[] {
+  const idSet = new Set(ids)
+  if (dir === "top" || dir === "bottom") {
+    const selected = elements.filter((el) => idSet.has(el.id))
+    const rest = elements.filter((el) => !idSet.has(el.id))
+    return dir === "top" ? [...rest, ...selected] : [...selected, ...rest]
+  }
+  const next = [...elements]
+  if (dir === "up") {
+    for (let i = next.length - 2; i >= 0; i--) {
+      if (idSet.has(next[i].id) && !idSet.has(next[i + 1].id)) {
+        const tmp = next[i]
+        next[i] = next[i + 1]
+        next[i + 1] = tmp
+      }
+    }
+  } else {
+    for (let i = 1; i < next.length; i++) {
+      if (idSet.has(next[i].id) && !idSet.has(next[i - 1].id)) {
+        const tmp = next[i]
+        next[i] = next[i - 1]
+        next[i - 1] = tmp
+      }
+    }
+  }
+  return next
 }
 
 export const useDoc = create<DocState>((set, get) => ({
@@ -84,7 +123,9 @@ export const useDoc = create<DocState>((set, get) => ({
     if (ids.length === 0) return
     get().pushHistory()
     const idSet = new Set(ids)
-    set((s) => ({ elements: s.elements.filter((el) => !idSet.has(el.id)) }))
+    set((s) => ({
+      elements: dissolveSingletonGroups(s.elements.filter((el) => !idSet.has(el.id))),
+    }))
     const sel = useUI.getState().selectedIds
     useUI.getState().setSelection(sel.filter((id) => !idSet.has(id)))
   },
@@ -93,22 +134,17 @@ export const useDoc = create<DocState>((set, get) => ({
     if (ids.length === 0) return
     get().pushHistory()
     const idSet = new Set(ids)
-    const copies = get()
-      .elements.filter((el) => idSet.has(el.id))
-      .map((el) => {
-        const copy = structuredClone(el)
-        copy.id = uid()
-        copy.x += 24
-        copy.y += 24
-        if (copy.type === "line") {
-          copy.x1 += 24
-          copy.y1 += 24
-          copy.x2 += 24
-          copy.y2 += 24
-        }
-        return copy
-      })
-    set((s) => ({ elements: [...s.elements, ...copies] }))
+    const copies = remapGroupIds(
+      get()
+        .elements.filter((el) => idSet.has(el.id))
+        .map((el) => {
+          const copy = translateElement(structuredClone(el), 24, 24)
+          copy.id = uid()
+          return copy
+        }),
+      () => uid("grp"),
+    )
+    set((s) => ({ elements: dissolveSingletonGroups([...s.elements, ...copies]) }))
     useUI.getState().setSelection(copies.map((e) => e.id))
   },
 
@@ -122,6 +158,63 @@ export const useDoc = create<DocState>((set, get) => ({
       next.splice(Math.max(0, Math.min(next.length, toIndex)), 0, moved)
       return { elements: next }
     })
+  },
+
+  groupElements: (ids) => {
+    const idSet = new Set(ids)
+    const present = get().elements.filter((el) => idSet.has(el.id))
+    if (present.length < 2) return
+    get().pushHistory()
+    const gid = uid("grp")
+    set((s) => {
+      const members = s.elements
+        .filter((el) => idSet.has(el.id))
+        .map((el) => ({ ...el, groupId: gid, groupName: "Group" }))
+      const others = dissolveSingletonGroups(s.elements.filter((el) => !idSet.has(el.id)))
+      const front = s.elements.findLastIndex((el) => idSet.has(el.id))
+      const before = s.elements.slice(0, front).filter((el) => !idSet.has(el.id)).length
+      return {
+        elements: [...others.slice(0, before), ...members, ...others.slice(before)],
+      }
+    })
+    useUI.getState().setSelection(present.map((el) => el.id))
+  },
+
+  ungroupElements: (ids) => {
+    const idSet = new Set(ids)
+    const groupIds = new Set(
+      get()
+        .elements.filter((el) => idSet.has(el.id) && el.groupId)
+        .map((el) => el.groupId as string),
+    )
+    if (groupIds.size === 0) return
+    get().pushHistory()
+    set((s) => ({
+      elements: s.elements.map((el) => {
+        if (!el.groupId || !groupIds.has(el.groupId)) return el
+        const next = { ...el }
+        delete next.groupId
+        delete next.groupName
+        return next
+      }),
+    }))
+  },
+
+  renameGroup: (groupId, name) => {
+    set((s) => ({
+      elements: s.elements.map((el) =>
+        el.groupId === groupId ? { ...el, groupName: name } : el,
+      ),
+    }))
+  },
+
+  reorderLayers: (ids, dir) => {
+    if (ids.length === 0) return
+    const current = get().elements
+    const next = reorderElements(current, ids, dir)
+    if (next.every((el, i) => el === current[i])) return
+    get().pushHistory()
+    set({ elements: next })
   },
 
   pushHistory: () => {

@@ -1,5 +1,5 @@
 import type { Element, StrokeElement, TextElement } from "./types"
-import { DEG, rotatePoint, type Point } from "./geometry"
+import { DEG, boundsOfPoints, rotatePoint, type Point } from "./geometry"
 
 export function translateElement(el: Element, dx: number, dy: number): Element {
   if (el.type === "line") {
@@ -23,10 +23,9 @@ export function rotateElementAbout(el: Element, pivot: Point, angle: number): El
     return { ...el, x1: a.x, y1: a.y, x2: b.x, y2: b.y }
   }
   if (el.type === "stroke") {
-    return {
-      ...el,
-      points: el.points.map((p) => rotatePoint(p, pivot, angle)),
-    }
+    const points = el.points.map((p) => rotatePoint(p, pivot, angle))
+    const b = boundsOfPoints(points)
+    return { ...el, points, x: b.x, y: b.y, width: b.width, height: b.height }
   }
   const center = { x: el.x + el.width / 2, y: el.y + el.height / 2 }
   const nc = rotatePoint(center, pivot, angle)
@@ -54,13 +53,19 @@ export function scaleElementAbout(
     }
   }
   if (el.type === "stroke") {
+    const points = el.points.map((p) => ({
+      ...p,
+      x: anchor.x + (p.x - anchor.x) * sx,
+      y: anchor.y + (p.y - anchor.y) * sy,
+    }))
+    const b = boundsOfPoints(points)
     const s: StrokeElement = {
       ...el,
-      points: el.points.map((p) => ({
-        ...p,
-        x: anchor.x + (p.x - anchor.x) * sx,
-        y: anchor.y + (p.y - anchor.y) * sy,
-      })),
+      points,
+      x: b.x,
+      y: b.y,
+      width: b.width,
+      height: b.height,
     }
     return s
   }
@@ -131,13 +136,17 @@ export function resizeBox(
     else newTop = Math.min(bottom - MIN_SIZE, p.y)
   }
 
-  if (opts.alt && ax !== 0 && ay !== 0) {
-    const dx = Math.abs(p.x - cx0)
-    const dy = Math.abs(p.y - cy0)
-    newLeft = cx0 - dx
-    newRight = cx0 + dx
-    newTop = cy0 - dy
-    newBottom = cy0 + dy
+  if (opts.alt) {
+    if (ax !== 0) {
+      const dx = Math.abs(p.x - cx0)
+      newLeft = cx0 - dx
+      newRight = cx0 + dx
+    }
+    if (ay !== 0) {
+      const dy = Math.abs(p.y - cy0)
+      newTop = cy0 - dy
+      newBottom = cy0 + dy
+    }
   }
 
   let w = Math.max(MIN_SIZE, newRight - newLeft)
@@ -151,14 +160,25 @@ export function resizeBox(
     else if (ay !== 0) s = h / h0
     w = Math.max(MIN_SIZE, w0 * s)
     h = Math.max(MIN_SIZE, h0 * s)
-    if (ax === 1) newLeft = right - w
-    else if (ax === -1) newLeft = left
-    else newLeft = cx0 - w / 2
-    if (ay === 1) newTop = bottom - h
-    else if (ay === -1) newTop = top
-    else newTop = cy0 - h / 2
-    newRight = newLeft + w
-    newBottom = newTop + h
+    if (opts.alt) {
+      // Alt scales about the center: both sides of the box move, so keep the
+      // element centered while applying the uniform scale.
+      newLeft = cx0 - w / 2
+      newRight = cx0 + w / 2
+      newTop = cy0 - h / 2
+      newBottom = cy0 + h / 2
+    } else {
+      // Keep the edge opposite the dragged handle fixed: dragging an
+      // east/south handle anchors the west/north edge, and vice versa.
+      if (ax === 1) newLeft = left
+      else if (ax === -1) newLeft = right - w
+      else newLeft = cx0 - w / 2
+      if (ay === 1) newTop = top
+      else if (ay === -1) newTop = bottom - h
+      else newTop = cy0 - h / 2
+      newRight = newLeft + w
+      newBottom = newTop + h
+    }
   } else {
     if (ax === 0) {
       newLeft = cx0 - w / 2

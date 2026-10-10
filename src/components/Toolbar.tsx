@@ -5,6 +5,7 @@ import {
   Hexagon,
   Highlighter,
   Image as ImageIcon,
+  LayoutGridCircles,
   MousePointer2,
   Pen,
   PenTool,
@@ -18,24 +19,20 @@ import {
 import type { ReactNode } from "react"
 import { useUI } from "@/store/useUI"
 import type { PenVariant, ShapeKind, Tool } from "@/lib/types"
+import { TOOL_SHORTCUTS } from "@/lib/tools"
 import { cn } from "@/lib/utils"
 
-interface ToolDef {
-  id: Tool
-  label: string
-  icon: LucideIcon
-  shortcut: string
+const TOOL_ICONS: Record<Tool, LucideIcon> = {
+  select: MousePointer2,
+  text: Type,
+  image: ImageIcon,
+  line: Slash,
+  shape: Square,
+  icon: LayoutGridCircles,
+  pen: PenTool,
 }
 
-const TOOLS: ToolDef[] = [
-  { id: "select", label: "Select", icon: MousePointer2, shortcut: "V" },
-  { id: "text", label: "Text", icon: Type, shortcut: "T" },
-  { id: "image", label: "Image", icon: ImageIcon, shortcut: "I" },
-  { id: "line", label: "Line", icon: Slash, shortcut: "L" },
-  { id: "shape", label: "Shape", icon: Square, shortcut: "R" },
-  { id: "icon", label: "Icon", icon: Star, shortcut: "O" },
-  { id: "pen", label: "Pen", icon: PenTool, shortcut: "P" },
-]
+const TOOLS = TOOL_SHORTCUTS.map((t) => ({ ...t, icon: TOOL_ICONS[t.id] }))
 
 const PEN_VARIANTS: { id: PenVariant; label: string; icon: LucideIcon }[] = [
   { id: "pen", label: "Pen", icon: Pen },
@@ -56,13 +53,13 @@ function RailButton({
   active,
   onClick,
   label,
-  shortcut,
+  shortcuts,
   children,
 }: {
   active?: boolean
   onClick: () => void
   label: string
-  shortcut?: string
+  shortcuts?: string[]
   children: ReactNode
 }) {
   return (
@@ -72,7 +69,7 @@ function RailButton({
       aria-label={label}
       aria-pressed={active}
       className={cn(
-        "group relative flex size-11 items-center justify-center rounded-xl transition-colors",
+        "group relative flex size-11 items-center justify-center rounded-xl",
         active
           ? "bg-primary text-primary-foreground"
           : "text-muted-foreground hover:bg-accent hover:text-foreground"
@@ -81,9 +78,9 @@ function RailButton({
       {children}
       <span className="pointer-events-none absolute right-[calc(100%+10px)] top-1/2 flex max-w-0 -translate-y-1/2 items-center overflow-hidden rounded-md bg-foreground py-1.5 text-xs font-medium whitespace-nowrap text-background opacity-0 transition-all duration-200 ease-out group-hover:max-w-56 group-hover:px-2.5 group-hover:opacity-100">
         {label}
-        {shortcut && (
+        {shortcuts?.[0] && (
           <kbd className="ml-2 rounded border border-background/25 px-1 text-[10px] opacity-70">
-            {shortcut}
+            {shortcuts[0].toUpperCase()}
           </kbd>
         )}
       </span>
@@ -111,7 +108,7 @@ export function Toolbar() {
               aria-pressed={penVariant === v.id}
               onClick={() => setPenVariant(v.id)}
               className={cn(
-                "group relative flex size-9 items-center justify-center rounded-lg transition-colors",
+                "group relative flex size-9 items-center justify-center rounded-lg",
                 penVariant === v.id
                   ? "bg-secondary text-secondary-foreground"
                   : "text-muted-foreground hover:bg-accent hover:text-foreground"
@@ -135,7 +132,7 @@ export function Toolbar() {
               aria-pressed={shapeKind === s.id}
               onClick={() => setDefaults({ shapeKind: s.id })}
               className={cn(
-                "group relative flex size-9 items-center justify-center rounded-lg transition-colors",
+                "group relative flex size-9 items-center justify-center rounded-lg",
                 shapeKind === s.id
                   ? "bg-secondary text-secondary-foreground"
                   : "text-muted-foreground hover:bg-accent hover:text-foreground"
@@ -156,7 +153,7 @@ export function Toolbar() {
               if (t.id === "pen") setPenVariant(penVariant)
             }}
             label={t.label}
-            shortcut={t.shortcut}
+            shortcuts={t.shortcuts}
           >
             <t.icon className="size-5" />
           </RailButton>

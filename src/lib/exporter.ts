@@ -1,6 +1,6 @@
-import type { ExportBackground } from "@/store/useUI"
-import type { Element, TextElement } from "./types"
-import { unionBounds } from "./geometry"
+import type { ExportBackground, ExportPadding } from "@/store/useUI"
+import type { Bounds, Element, TextElement } from "./types"
+import { boundsCorners, getBounds } from "./geometry"
 import { db } from "./db"
 import { buildFontEmbedCSS } from "./fonts"
 
@@ -30,12 +30,94 @@ function backgroundRect(background: ExportBackground, w: number, h: number, x: n
   return `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${fill}" />`
 }
 
+/** Outer padding presets (world units) offered in the export menu. */
+export const EXPORT_PADDINGS: Record<ExportPadding, number> = {
+  normal: 48,
+  small: 16,
+  none: 0,
+}
+
+/** Axis-aligned visual extent of one element: its (rotated) geometry expanded
+ *  for stroke/border thickness, line caps/arrowheads, and drop shadows. */
+function elementVisualBox(el: Element): {
+  minX: number
+  minY: number
+  maxX: number
+  maxY: number
+} {
+  const corners = boundsCorners(getBounds(el))
+  let minX = Infinity
+  let minY = Infinity
+  let maxX = -Infinity
+  let maxY = -Infinity
+  for (const c of corners) {
+    minX = Math.min(minX, c.x)
+    minY = Math.min(minY, c.y)
+    maxX = Math.max(maxX, c.x)
+    maxY = Math.max(maxY, c.y)
+  }
+
+  // Borders/strokes are centered on the path, so half spills past the geometry.
+  let stroke = (el.strokeWidth || 0) / 2
+  if (el.type === "line" && (el.arrowStart || el.arrowEnd)) {
+    stroke += (el.strokeWidth || 0) * 2.5 // arrowhead half-height + tip
+  }
+
+  // Drop shadow (feDropShadow): stdDeviation = blur / 2, spreading ~3σ each way,
+  // plus the directional offset. Rotated boxes blur the rotated offset, so there
+  // we fall back to a uniform (safe) expansion.
+  let left = 0
+  let right = 0
+  let top = 0
+  let bottom = 0
+  const shadow = el.shadow
+  if (shadow && el.type !== "stroke") {
+    const spread = shadow.blur * 2
+    const rotated = el.type !== "line" && el.rotation !== 0
+    if (rotated) {
+      left = right = top = bottom =
+        spread + Math.max(Math.abs(shadow.offsetX), Math.abs(shadow.offsetY))
+    } else {
+      left = spread + Math.max(0, -shadow.offsetX)
+      right = spread + Math.max(0, shadow.offsetX)
+      top = spread + Math.max(0, -shadow.offsetY)
+      bottom = spread + Math.max(0, shadow.offsetY)
+    }
+  }
+
+  return {
+    minX: minX - stroke - left,
+    minY: minY - stroke - top,
+    maxX: maxX + stroke + right,
+    maxY: maxY + stroke + bottom,
+  }
+}
+
+/** Axis-aligned world bounds of everything that will actually be drawn,
+ *  including strokes/borders and shadows, so tight crops never clip content. */
+export function visualBounds(elements: Element[]): Bounds | null {
+  const visible = elements.filter((el) => !el.hidden)
+  if (visible.length === 0) return null
+  let minX = Infinity
+  let minY = Infinity
+  let maxX = -Infinity
+  let maxY = -Infinity
+  for (const el of visible) {
+    const box = elementVisualBox(el)
+    minX = Math.min(minX, box.minX)
+    minY = Math.min(minY, box.minY)
+    maxX = Math.max(maxX, box.maxX)
+    maxY = Math.max(maxY, box.maxY)
+  }
+  return { x: minX, y: minY, width: maxX - minX, height: maxY - minY, rotation: 0 }
+}
+
 export async function buildSvg(
   elements: Element[],
   background: ExportBackground,
   padding = 48
 ): Promise<BuiltSvg> {
-  const b = unionBounds(elements) ?? { x: 0, y: 0, width: 960, height: 640, rotation: 0 }
+  const b = visualBounds(elements) ?? { x: 0, y: 0, width: 960, height: 640, rotation: 0 }
   const minX = b.x - padding
   const minY = b.y - padding
   const width = Math.max(1, Math.ceil(b.width + padding * 2))
@@ -79,6 +161,14 @@ export async function buildSvg(
   } catch {
     fontCss = ""
   }
+
+  // Only the requested elements — drops in-progress drafts and, for a
+  // selection export, everything that isn't selected.
+  const keep = new Set(elements.map((el) => el.id))
+  wrapper.querySelectorAll("[data-element-id]").forEach((node) => {
+    const id = node.getAttribute("data-element-id")
+    if (!id || !keep.has(id)) node.remove()
+  })
 
   const content = wrapper.innerHTML
   const bg = backgroundRect(background, width, height, minX, minY)

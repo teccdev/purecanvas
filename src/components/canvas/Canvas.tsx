@@ -4,12 +4,13 @@ import {
   useMemo,
   useRef,
   useState,
+  type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
 } from "react"
 import { useDoc } from "@/store/useDoc"
 import { useUI } from "@/store/useUI"
 import type {
-  Camera,
+  Bounds,
   Element,
   LineElement,
   ShapeElement,
@@ -19,10 +20,12 @@ import type {
 } from "@/lib/types"
 import {
   DEG,
+  boundsCorners,
   clamp,
   elementCenter,
   getBounds,
   pointInElement,
+  rotatePoint,
   screenToWorld,
   simplifyPoints,
   unionBounds,
@@ -38,7 +41,15 @@ import {
   translateElement,
 } from "@/lib/transform"
 import { uid } from "@/lib/id"
+import { expandToGroups } from "@/lib/groups"
+import {
+  collectSnapTargets,
+  gridSpacing,
+  snapOffset,
+  type SnapResult,
+} from "@/lib/snapping"
 import { createImageElement } from "@/lib/assets"
+import { fetchImageBlob, readDragPayload } from "@/lib/pixabay"
 import { ElementView } from "./ElementView"
 import { SelectionOverlay } from "./SelectionOverlay"
 import { DotGridBackground } from "./DotGridBackground"
@@ -46,7 +57,7 @@ import { TextEditor } from "./TextEditor"
 import { registerSceneRoot } from "@/lib/exporter"
 
 type Interaction =
-  | { mode: "pan"; startClient: Point; startCam: Camera }
+  | { mode: "pan"; lastClient: Point }
   | { mode: "marquee"; startWorld: Point; additive: boolean }
   | { mode: "move"; startWorld: Point; originals: Element[]; pushed: boolean }
   | { mode: "resize"; handle: string; originals: Element[]; pushed: boolean }
@@ -62,6 +73,15 @@ type Interaction =
   | { mode: "draw-pen"; points: StrokePoint[] }
   | { mode: "erase" }
 
+type SnapIndicator = {
+  point: Point | null
+  xLine: number | null
+  yLine: number | null
+}
+
+/** Snap threshold in screen pixels, converted to world units per zoom. */
+const SNAP_THRESHOLD_PX = 6
+
 export function Canvas() {
   const svgRef = useRef<SVGSVGElement | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
@@ -72,11 +92,13 @@ export function Canvas() {
   const camera = useDoc((s) => s.camera)
   const tool = useUI((s) => s.tool)
   const selectedIds = useUI((s) => s.selectedIds)
+  const editingTextId = useUI((s) => s.editingTextId)
   const zoomRequest = useUI((s) => s.zoomRequest)
 
   const [draft, setDraft] = useState<Element | null>(null)
   const [marquee, setMarquee] = useState<{ start: Point; end: Point } | null>(null)
   const [spaceDown, setSpaceDown] = useState(false)
+  const [snapIndicator, setSnapIndicator] = useState<SnapIndicator | null>(null)
 
   const getScreen = useCallback((e: { clientX: number; clientY: number }): Point => {
     const rect = svgRef.current?.getBoundingClientRect()
@@ -95,6 +117,25 @@ export function Canvas() {
     registerSceneRoot(node)
   }, [])
 
+  /** Find the gentlest snap for candidate world points against the scene and grid. */
+  const getSnap = useCallback(
+    (candidates: Point[], excludeIds: string[], disabled: boolean): SnapResult | null => {
+      if (disabled) return null
+      const { elements: els, camera } = useDoc.getState()
+      const spacing = gridSpacing(camera.zoom)
+      const threshold = SNAP_THRESHOLD_PX / camera.zoom
+      const targets = collectSnapTargets(els, new Set(excludeIds))
+      return snapOffset(candidates, targets, spacing, threshold)
+    },
+    []
+  )
+
+  const snappedPoint = useCallback(
+    (world: Point, snap: SnapResult | null): Point =>
+      snap ? { x: world.x + snap.dx, y: world.y + snap.dy } : world,
+    []
+  )
+
   // Space key pans.
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -103,22 +144,33 @@ export function Canvas() {
     const up = (e: KeyboardEvent) => {
       if (e.code === "Space") setSpaceDown(false)
     }
+    // Reset if the window loses focus while Space is held (e.g. a native
+    // dialog swallows the keyup), otherwise the cursor stays stuck as grab.
+    const reset = () => setSpaceDown(false)
     window.addEventListener("keydown", down)
     window.addEventListener("keyup", up)
+    window.addEventListener("blur", reset)
+    document.addEventListener("visibilitychange", reset)
     return () => {
       window.removeEventListener("keydown", down)
       window.removeEventListener("keyup", up)
+      window.removeEventListener("blur", reset)
+      document.removeEventListener("visibilitychange", reset)
     }
   }, [])
 
-  // Wheel: zoom with ctrl/meta, otherwise pan.
+  // Wheel: zoom toward the cursor by default (ctrl/⌘ pinch included); Shift pans.
   useEffect(() => {
     const svg = svgRef.current
     if (!svg) return
     const handler = (e: WheelEvent) => {
       e.preventDefault()
       const cam = useDoc.getState().camera
-      if (e.ctrlKey || e.metaKey) {
+      if (e.shiftKey && !e.ctrlKey && !e.metaKey) {
+        const dx = e.deltaX || e.deltaY
+        const dy = e.deltaX !== 0 ? e.deltaY : 0
+        useDoc.getState().setCamera({ x: cam.x - dx, y: cam.y - dy })
+      } else {
         const screen = getScreen(e)
         const world = screenToWorld(screen, cam)
         const factor = Math.exp(-e.deltaY * 0.0015)
@@ -126,8 +178,6 @@ export function Canvas() {
         useDoc
           .getState()
           .setCamera({ zoom, x: screen.x - world.x * zoom, y: screen.y - world.y * zoom })
-      } else {
-        useDoc.getState().setCamera({ x: cam.x - e.deltaX, y: cam.y - e.deltaY })
       }
     }
     svg.addEventListener("wheel", handler, { passive: false })
@@ -152,7 +202,12 @@ export function Canvas() {
     const { projectId, addElements } = useDoc.getState()
     try {
       const el = await createImageElement(projectId, blob, world)
-      addElements([el])
+      const d = useUI.getState().defaults
+      addElements([
+        { ...el, stroke: d.imageStroke, strokeWidth: d.imageStrokeWidth, shadow: d.shadow ?? null },
+      ])
+      // Using the image tool places one image, then returns to the cursor.
+      if (useUI.getState().tool === "image") useUI.getState().setTool("select")
     } catch {
       /* ignore */
     }
@@ -181,12 +236,32 @@ export function Canvas() {
     return () => window.removeEventListener("paste", onPaste)
   }, [addImageAt])
 
+  // The properties panel's upload button asks us to open the file picker.
+  useEffect(() => {
+    const openUpload = () => fileInputRef.current?.click()
+    window.addEventListener("open-image-upload", openUpload)
+    return () => window.removeEventListener("open-image-upload", openUpload)
+  }, [])
+
   const onDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault()
+      const world = getWorld({ clientX: e.clientX, clientY: e.clientY })
+      // Stock images dragged from the Pixabay panel carry a custom payload.
+      const payload = readDragPayload(e)
+      if (payload) {
+        void (async () => {
+          try {
+            const blob = await fetchImageBlob(payload.url)
+            await addImageAt(blob, world)
+          } catch {
+            /* ignore */
+          }
+        })()
+        return
+      }
       const files = Array.from(e.dataTransfer.files).filter((f) => f.type.startsWith("image/"))
       for (const file of files) {
-        const world = getWorld({ clientX: e.clientX, clientY: e.clientY })
         void addImageAt(file, world)
       }
     },
@@ -228,8 +303,7 @@ export function Canvas() {
       if (e.button === 1 || spaceDown) {
         interaction.current = {
           mode: "pan",
-          startClient: { x: e.clientX, y: e.clientY },
-          startCam: useDoc.getState().camera,
+          lastClient: { x: e.clientX, y: e.clientY },
         }
         e.currentTarget.setPointerCapture(e.pointerId)
         e.preventDefault()
@@ -240,6 +314,7 @@ export function Canvas() {
 
       const handleEl = target.closest?.("[data-handle]") as SVGElement | null
       const elementEl = target.closest?.("[data-element-id]") as SVGElement | null
+      setSnapIndicator(null)
 
       switch (ui.tool) {
         case "select": {
@@ -248,15 +323,28 @@ export function Canvas() {
           } else if (elementEl?.dataset.elementId) {
             const id = elementEl.dataset.elementId
             const additive = e.shiftKey || e.metaKey || e.ctrlKey
+            // Alt picks a single member out of a group; otherwise the group
+            // selects as one object.
+            const direct = e.altKey
+            const targetIds = direct
+              ? [id]
+              : expandToGroups(useDoc.getState().elements, [id])
             let ids = ui.selectedIds
             if (additive) {
-              if (!ids.includes(id)) {
-                ui.addToSelection([id])
-                ids = [...ids, id]
-              }
-            } else if (!ids.includes(id)) {
+              const allIn = targetIds.every((t) => ids.includes(t))
+              ids = allIn
+                ? ids.filter((x) => !targetIds.includes(x))
+                : Array.from(new Set([...ids, ...targetIds]))
+              ui.setSelection(ids)
+            } else if (direct) {
               ui.setSelection([id])
               ids = [id]
+            } else if (targetIds.every((t) => ids.includes(t))) {
+              // Plain click on something already selected: keep the
+              // whole selection so dragging moves everything in it.
+            } else {
+              ui.setSelection(targetIds)
+              ids = targetIds
             }
             const originals = useDoc
               .getState()
@@ -272,13 +360,19 @@ export function Canvas() {
           break
         }
         case "shape": {
-          interaction.current = { mode: "draw-shape", startWorld: world }
-          setDraft(makeShapeDraft(world, world, false, ui.defaults))
+          const snap = getSnap([world], [], e.altKey)
+          const start = snappedPoint(world, snap)
+          setSnapIndicator(toIndicator(snap))
+          interaction.current = { mode: "draw-shape", startWorld: start }
+          setDraft(makeShapeDraft(start, start, false, ui.defaults))
           break
         }
         case "line": {
-          interaction.current = { mode: "draw-line", startWorld: world }
-          setDraft(makeLineDraft(world, world, false, ui.defaults))
+          const snap = getSnap([world], [], e.altKey)
+          const start = snappedPoint(world, snap)
+          setSnapIndicator(toIndicator(snap))
+          interaction.current = { mode: "draw-line", startWorld: start }
+          setDraft(makeLineDraft(start, start, false, ui.defaults))
           break
         }
         case "pen": {
@@ -294,12 +388,15 @@ export function Canvas() {
         }
         case "text": {
           const d = ui.defaults
+          const snap = getSnap([world], [], e.altKey)
+          const origin = snappedPoint(world, snap)
+          setSnapIndicator(toIndicator(snap))
           const el: TextElement = {
             id: uid(),
             type: "text",
             text: "",
-            x: world.x,
-            y: world.y,
+            x: origin.x,
+            y: origin.y,
             width: 280,
             height: d.fontSize * 1.3,
             rotation: 0,
@@ -310,6 +407,9 @@ export function Canvas() {
             color: d.color,
             align: d.textAlign,
             lineHeight: 1.3,
+            stroke: d.textStroke,
+            strokeWidth: d.textStrokeWidth,
+            shadow: d.shadow ?? null,
           }
           useDoc.getState().addElements([el])
           useUI.getState().setTool("select")
@@ -319,11 +419,14 @@ export function Canvas() {
         case "icon": {
           const d = ui.defaults
           const size = 96
+          const snap = getSnap([world], [], e.altKey)
+          const center = snappedPoint(world, snap)
+          setSnapIndicator(toIndicator(snap))
           const el: Element = {
             id: uid(),
             type: "icon",
-            x: world.x - size / 2,
-            y: world.y - size / 2,
+            x: center.x - size / 2,
+            y: center.y - size / 2,
             width: size,
             height: size,
             rotation: 0,
@@ -332,18 +435,25 @@ export function Canvas() {
             name: d.iconName,
             color: d.color,
             strokeWidth: d.iconStrokeWidth,
+            filled: d.iconFilled,
+            fill: d.iconFill,
+            rounded: d.iconRounded,
+            shadow: d.shadow ?? null,
           }
           useDoc.getState().addElements([el])
+          // Placing an icon is a one-shot action; return to the cursor.
+          useUI.getState().setTool("select")
           return
         }
         case "image": {
-          fileInputRef.current?.click()
+          // Clicking the canvas in the image tool does nothing — images are
+          // placed via the stock panel or the upload button instead.
           return
         }
       }
       e.currentTarget.setPointerCapture(e.pointerId)
     },
-    [eraseAt, getWorld, spaceDown, startResizeOrRotate]
+    [eraseAt, getSnap, getWorld, snappedPoint, spaceDown, startResizeOrRotate]
   )
 
   const onPointerMove = useCallback(
@@ -354,9 +464,13 @@ export function Canvas() {
 
       switch (ia.mode) {
         case "pan": {
-          const dx = e.clientX - ia.startClient.x
-          const dy = e.clientY - ia.startClient.y
-          useDoc.getState().setCamera({ x: ia.startCam.x + dx, y: ia.startCam.y + dy })
+          // Incremental so a scroll-zoom mid-pan (which also moves the camera)
+          // is preserved instead of being overwritten from a stale start camera.
+          const dx = e.clientX - ia.lastClient.x
+          const dy = e.clientY - ia.lastClient.y
+          const cam = useDoc.getState().camera
+          useDoc.getState().setCamera({ x: cam.x + dx, y: cam.y + dy })
+          ia.lastClient = { x: e.clientX, y: e.clientY }
           break
         }
         case "marquee": {
@@ -371,10 +485,15 @@ export function Canvas() {
             useDoc.getState().pushHistory()
             ia.pushed = true
           }
+          const ids = ia.originals.map((el) => el.id)
+          const snap = getSnap(moveCandidates(ia.originals, dx, dy), ids, e.altKey)
+          const sdx = dx + (snap?.dx ?? 0)
+          const sdy = dy + (snap?.dy ?? 0)
+          setSnapIndicator(toIndicator(snap))
           const map = new Map(ia.originals.map((el) => [el.id, el]))
-          useDoc.getState().updateElements(ia.originals.map((el) => el.id), (el) => {
+          useDoc.getState().updateElements(ids, (el) => {
             const base = map.get(el.id)
-            return base ? translateElement(base, dx, dy) : el
+            return base ? translateElement(base, sdx, sdy) : el
           })
           break
         }
@@ -383,7 +502,43 @@ export function Canvas() {
             useDoc.getState().pushHistory()
             ia.pushed = true
           }
-          applyResize(ia, world, e)
+          let target = world
+          let snap: SnapResult | null = null
+          const ids = ia.originals.map((el) => el.id)
+          const single = ia.originals.length === 1 ? ia.originals[0] : null
+          if (
+            single &&
+            single.type === "line" &&
+            (ia.handle === "line-start" || ia.handle === "line-end")
+          ) {
+            snap = getSnap([world], ids, e.altKey)
+            target = snappedPoint(world, snap)
+          } else if (!e.altKey) {
+            // Snap the dragged grip's visual position, then move the pointer so
+            // the resize lands on the snap. Corner grips track the pointer 1:1
+            // (even when rotated); edge grips only move along their normal, so
+            // the snap delta is projected onto it.
+            const preview = resizeSelection(ia, world, e, false)
+            const grip = preview ? gripCandidates(preview, ia.handle)[0] : undefined
+            if (preview && grip) {
+              const found = getSnap([grip], ids, false)
+              if (found) {
+                const { ax, ay } = handleToAnchor(ia.handle)
+                let nudge = { x: found.dx, y: found.dy }
+                if (ax === 0 || ay === 0) {
+                  const theta = (preview.length === 1 ? preview[0].rotation : 0) * DEG
+                  const ux = ax * Math.cos(theta) - ay * Math.sin(theta)
+                  const uy = ax * Math.sin(theta) + ay * Math.cos(theta)
+                  const along = found.dx * ux + found.dy * uy
+                  nudge = { x: along * ux, y: along * uy }
+                }
+                target = { x: world.x + nudge.x, y: world.y + nudge.y }
+                snap = { ...found, point: { x: grip.x + nudge.x, y: grip.y + nudge.y } }
+              }
+            }
+          }
+          applyResize(ia, target, e, !!snap)
+          setSnapIndicator(toIndicator(snap))
           break
         }
         case "rotate": {
@@ -391,15 +546,25 @@ export function Canvas() {
             useDoc.getState().pushHistory()
             ia.pushed = true
           }
-          applyRotate(ia, world, e.shiftKey)
+          applyRotate(ia, world, e.shiftKey, e.altKey)
           break
         }
         case "draw-shape": {
-          setDraft(makeShapeDraft(ia.startWorld, world, e.shiftKey, useUI.getState().defaults))
+          const snap = getSnap([world], [], e.altKey)
+          const corner = snappedPoint(world, snap)
+          setSnapIndicator(toIndicator(snap))
+          setDraft(
+            makeShapeDraft(ia.startWorld, corner, e.shiftKey && !snap, useUI.getState().defaults)
+          )
           break
         }
         case "draw-line": {
-          setDraft(makeLineDraft(ia.startWorld, world, e.shiftKey, useUI.getState().defaults))
+          const snap = getSnap([world], [], e.altKey)
+          const end = snappedPoint(world, snap)
+          setSnapIndicator(toIndicator(snap))
+          setDraft(
+            makeLineDraft(ia.startWorld, end, e.shiftKey && !snap, useUI.getState().defaults)
+          )
           break
         }
         case "draw-pen": {
@@ -417,7 +582,7 @@ export function Canvas() {
         }
       }
     },
-    [eraseAt, getWorld]
+    [eraseAt, getSnap, getWorld, snappedPoint]
   )
 
   const finalizeStroke = useCallback(
@@ -449,6 +614,7 @@ export function Canvas() {
     const ia = interaction.current
     interaction.current = null
     const d = useUI.getState().defaults
+    setSnapIndicator(null)
 
     if (ia?.mode === "marquee") {
       const m = marqueeRef.current
@@ -463,19 +629,22 @@ export function Canvas() {
           rotation: 0,
         }
         if (b.width > 2 || b.height > 2) {
-          const ids = useDoc
-            .getState()
-            .elements.filter((el) => {
-              if (el.hidden || el.locked) return false
-              const eb = getBounds(el)
-              return (
-                eb.x < b.x + b.width &&
-                eb.x + eb.width > b.x &&
-                eb.y < b.y + b.height &&
-                eb.y + eb.height > b.y
-              )
-            })
-            .map((el) => el.id)
+          const els = useDoc.getState().elements
+          const ids = expandToGroups(
+            els,
+            els
+              .filter((el) => {
+                if (el.hidden || el.locked) return false
+                const eb = getBounds(el)
+                return (
+                  eb.x < b.x + b.width &&
+                  eb.x + eb.width > b.x &&
+                  eb.y < b.y + b.height &&
+                  eb.y + eb.height > b.y
+                )
+              })
+              .map((el) => el.id),
+          )
           const ui = useUI.getState()
           if (ia.additive) ui.addToSelection(ids)
           else ui.setSelection(ids)
@@ -491,6 +660,8 @@ export function Canvas() {
         shape.height = size
       }
       useDoc.getState().addElements([shape])
+      // One-shot tools return to the cursor after use (Pen stays).
+      useUI.getState().setTool("select")
       setDraft(null)
     } else if (ia?.mode === "draw-line" && draft?.type === "line") {
       const line: LineElement = { ...draft, id: uid() }
@@ -499,6 +670,7 @@ export function Canvas() {
         line.y2 = line.y1
       }
       useDoc.getState().addElements([line])
+      useUI.getState().setTool("select")
       setDraft(null)
     } else if (ia?.mode === "draw-pen" && draft?.type === "stroke") {
       finalizeStroke(ia.points, d)
@@ -507,6 +679,25 @@ export function Canvas() {
       setDraft(null)
     }
   }, [draft, finalizeStroke])
+
+  const onDoubleClick = useCallback(
+    (e: ReactMouseEvent<SVGSVGElement>) => {
+      if (useUI.getState().tool !== "select") return
+      // A pending drag captures the pointer, which retargets the double-click
+      // event to the svg; ask the document what is actually under the cursor.
+      const under = document.elementFromPoint(e.clientX, e.clientY)
+      const node = under?.closest("[data-element-id]")
+      const id = node?.getAttribute("data-element-id")
+      if (!id) return
+      const el = useDoc.getState().elements.find((x) => x.id === id)
+      if (!el || el.locked || el.hidden) return
+      if (el.type === "text") {
+        e.preventDefault()
+        useUI.getState().setEditingText(el.id)
+      }
+    },
+    []
+  )
 
   const screenMarquee = useMemo(() => {
     if (!marquee) return null
@@ -520,6 +711,21 @@ export function Canvas() {
     }
   }, [marquee, camera])
 
+  const snapScreen = useMemo(() => {
+    if (!snapIndicator) return null
+    return {
+      point: snapIndicator.point ? worldToScreen(snapIndicator.point, camera) : null,
+      x:
+        snapIndicator.xLine != null
+          ? worldToScreen({ x: snapIndicator.xLine, y: 0 }, camera).x
+          : null,
+      y:
+        snapIndicator.yLine != null
+          ? worldToScreen({ x: 0, y: snapIndicator.yLine }, camera).y
+          : null,
+    }
+  }, [snapIndicator, camera])
+
   const cursor = spaceDown
     ? "grab"
     : tool === "select"
@@ -530,7 +736,7 @@ export function Canvas() {
 
   return (
     <div
-      className="relative size-full overflow-hidden"
+      className="relative size-full overflow-hidden select-none"
       onDrop={onDrop}
       onDragOver={(e) => e.preventDefault()}
     >
@@ -543,16 +749,55 @@ export function Canvas() {
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
+        onDoubleClick={onDoubleClick}
       >
         <g transform={`translate(${camera.x} ${camera.y}) scale(${camera.zoom})`}>
           <g ref={setSceneRoot}>
             {elements.map((el) => (
-              <ElementView key={el.id} el={el} />
+              <ElementView key={el.id} el={el} editing={el.id === editingTextId} />
             ))}
             {draft && <ElementView el={draft} />}
           </g>
         </g>
         <SelectionOverlay />
+        {snapScreen && (
+          <g pointerEvents="none">
+            {snapScreen.point && (
+              <circle
+                cx={snapScreen.point.x}
+                cy={snapScreen.point.y}
+                r={4}
+                fill="var(--primary)"
+                stroke="var(--background)"
+                strokeWidth={1.5}
+              />
+            )}
+            {snapScreen.x != null && (
+              <line
+                x1={snapScreen.x}
+                y1="0%"
+                x2={snapScreen.x}
+                y2="100%"
+                stroke="var(--ring)"
+                strokeWidth={1}
+                strokeDasharray="4 4"
+                opacity={0.6}
+              />
+            )}
+            {snapScreen.y != null && (
+              <line
+                x1="0%"
+                y1={snapScreen.y}
+                x2="100%"
+                y2={snapScreen.y}
+                stroke="var(--ring)"
+                strokeWidth={1}
+                strokeDasharray="4 4"
+                opacity={0.6}
+              />
+            )}
+          </g>
+        )}
         {screenMarquee && (
           <rect
             x={screenMarquee.x}
@@ -590,6 +835,50 @@ export function Canvas() {
       {selectedIds.length === 0 && elements.length === 0 && <EmptyHint />}
     </div>
   )
+}
+
+function toIndicator(snap: SnapResult | null): SnapIndicator | null {
+  if (!snap) return null
+  return { point: snap.point, xLine: snap.xLine, yLine: snap.yLine }
+}
+
+/** Snap points of a box: its four corners plus the four edge midpoints, so
+ *  the selection's edges (top/left/bottom/right) snap like its corners do. */
+function boxSnapPoints(b: Bounds): Point[] {
+  const c = boundsCorners(b)
+  const mid = (a: Point, d: Point): Point => ({
+    x: (a.x + d.x) / 2,
+    y: (a.y + d.y) / 2,
+  })
+  return [
+    ...c,
+    mid(c[0], c[1]),
+    mid(c[1], c[2]),
+    mid(c[2], c[3]),
+    mid(c[3], c[0]),
+  ]
+}
+
+/** World points of a moving selection that participate in snapping. */
+function moveCandidates(originals: Element[], dx: number, dy: number): Point[] {
+  const pts: Point[] = []
+  if (originals.length === 1) {
+    const el = originals[0]
+    if (el.type === "line") {
+      pts.push({ x: el.x1, y: el.y1 }, { x: el.x2, y: el.y2 })
+    } else if (el.type === "stroke" && el.points.length > 0) {
+      pts.push(el.points[0], el.points[el.points.length - 1])
+    } else {
+      // A single box: snap its actual (rotated) corners and edge midpoints so
+      // guides line up with the visible selection outline.
+      pts.push(...boxSnapPoints(getBounds(el)))
+    }
+  }
+  if (pts.length === 0) {
+    const b = unionBounds(originals)
+    if (b) pts.push(...boxSnapPoints(b))
+  }
+  return pts.map((p) => ({ x: p.x + dx, y: p.y + dy }))
 }
 
 function pointsBounds(points: StrokePoint[]) {
@@ -635,10 +924,12 @@ function makeShapeDraft(
     rotation: 0,
     opacity: 1,
     fill: d.fill,
+    gradient: d.gradient ?? null,
     stroke: d.color,
     strokeWidth: d.strokeWidth,
     filled: d.filled,
     radius: d.cornerRadius,
+    shadow: d.shadow ?? null,
   }
 }
 
@@ -674,6 +965,8 @@ function makeLineDraft(
     color: d.color,
     arrowStart: d.arrowStart,
     arrowEnd: d.arrowEnd,
+    rounded: d.lineRounded,
+    shadow: d.shadow ?? null,
   }
 }
 
@@ -703,10 +996,13 @@ function scaleFromHandle(
   el: Element,
   handle: string,
   world: Point,
-  shift: boolean
+  shift: boolean,
+  alt: boolean
 ): Element {
   const b = getBounds(el)
-  const anchor = boundsFixedAnchor(b, handle)
+  const anchor = alt
+    ? { x: b.x + b.width / 2, y: b.y + b.height / 2 }
+    : boundsFixedAnchor(b, handle)
   const { ax, ay } = handleToAnchor(handle)
   const origX = ax === -1 ? b.x : ax === 1 ? b.x + b.width : b.x + b.width / 2
   const origY = ay === -1 ? b.y : ay === 1 ? b.y + b.height : b.y + b.height / 2
@@ -720,45 +1016,42 @@ function scaleFromHandle(
   return scaleElementAbout(el, anchor, sx, sy)
 }
 
-function applyResize(
+/** Resize without writing to the store; used for snap previews and applying. */
+function resizeSelection(
   ia: Extract<Interaction, { mode: "resize" }>,
   world: Point,
-  e: ReactPointerEvent
-) {
+  e: ReactPointerEvent,
+  snapped: boolean
+): Element[] | null {
   const opts = { shift: e.shiftKey, alt: e.altKey }
   if (ia.originals.length === 1) {
     const el = ia.originals[0]
     if (el.type === "line" && (ia.handle === "line-start" || ia.handle === "line-end")) {
       const other = ia.handle === "line-start" ? { x: el.x2, y: el.y2 } : { x: el.x1, y: el.y1 }
       let end = world
-      if (e.shiftKey) {
+      if (!snapped && e.shiftKey) {
         const angle = Math.atan2(world.y - other.y, world.x - other.x)
         const step = Math.PI / 12
-        const snapped = Math.round(angle / step) * step
+        const snappedAngle = Math.round(angle / step) * step
         const len = Math.hypot(world.x - other.x, world.y - other.y)
-        end = { x: other.x + Math.cos(snapped) * len, y: other.y + Math.sin(snapped) * len }
+        end = { x: other.x + Math.cos(snappedAngle) * len, y: other.y + Math.sin(snappedAngle) * len }
       }
       const next: LineElement =
         ia.handle === "line-start"
           ? { ...el, x1: end.x, y1: end.y }
           : { ...el, x2: end.x, y2: end.y }
-      useDoc.getState().updateElements([el.id], () => next)
-      return
+      return [next]
     }
-    if (el.type === "stroke") {
-      useDoc.getState().updateElements([el.id], () => scaleFromHandle(el, ia.handle, world, e.shiftKey))
-      return
-    }
-    if (el.type === "line") return
-    useDoc
-      .getState()
-      .updateElements([el.id], () => resizeBox(el, ia.handle, world, opts))
-    return
+    if (el.type === "stroke")
+      return [scaleFromHandle(el, ia.handle, world, e.shiftKey, e.altKey)]
+    if (el.type === "line") return null
+    return [resizeBox(el, ia.handle, world, opts)]
   }
 
   const b = unionBounds(ia.originals)
-  if (!b) return
-  const anchor = boundsFixedAnchor(b, ia.handle)
+  if (!b) return null
+  const center = { x: b.x + b.width / 2, y: b.y + b.height / 2 }
+  const anchor = e.altKey ? center : boundsFixedAnchor(b, ia.handle)
   const { ax, ay } = handleToAnchor(ia.handle)
   const origX = ax === -1 ? b.x : ax === 1 ? b.x + b.width : b.x + b.width / 2
   const origY = ay === -1 ? b.y : ay === 1 ? b.y + b.height : b.y + b.height / 2
@@ -770,38 +1063,110 @@ function applyResize(
     sy = sy < 0 ? -s : s
   }
   const map = new Map(ia.originals.map((el) => [el.id, el]))
-  useDoc.getState().updateElements(ia.originals.map((el) => el.id), (el) => {
+  return ia.originals.map((el) => {
     const base = map.get(el.id)
     return base ? scaleElementAbout(base, anchor, sx, sy) : el
   })
 }
 
+function applyResize(
+  ia: Extract<Interaction, { mode: "resize" }>,
+  world: Point,
+  e: ReactPointerEvent,
+  snapped: boolean
+) {
+  const next = resizeSelection(ia, world, e, snapped)
+  if (!next) return
+  useDoc.getState().updateElements(
+    next.map((el) => el.id),
+    (el) => next.find((n) => n.id === el.id) ?? el
+  )
+}
+
+/** Visual position of the point a handle drags: corner for corner grips, edge midpoint for edge grips. */
+function gripPointForHandle(
+  b: { x: number; y: number; width: number; height: number },
+  handle: string
+): Point {
+  const cx = b.x + b.width / 2
+  const cy = b.y + b.height / 2
+  switch (handle) {
+    case "nw":
+      return { x: b.x, y: b.y }
+    case "n":
+      return { x: cx, y: b.y }
+    case "ne":
+      return { x: b.x + b.width, y: b.y }
+    case "e":
+      return { x: b.x + b.width, y: cy }
+    case "se":
+      return { x: b.x + b.width, y: b.y + b.height }
+    case "s":
+      return { x: cx, y: b.y + b.height }
+    case "sw":
+      return { x: b.x, y: b.y + b.height }
+    case "w":
+      return { x: b.x, y: cy }
+    default:
+      return { x: cx, y: cy }
+  }
+}
+
+/**
+ * The visual point a resize handle moves, used as the snap candidate. Snapping
+ * this point translates into an exact pointer nudge for the whole box. For a
+ * rotated box the handle sits on the rotated bounds, so the local grip point is
+ * rotated about the element center to match what the user sees.
+ */
+function gripCandidates(preview: Element[], handle: string): Point[] {
+  if (preview.length === 1) {
+    const el = preview[0]
+    if (el.type === "line" || el.type === "stroke") return []
+    const b = getBounds(el)
+    const local = gripPointForHandle(b, handle)
+    const center = { x: b.x + b.width / 2, y: b.y + b.height / 2 }
+    return [rotatePoint(local, center, b.rotation * DEG)]
+  }
+  const b = unionBounds(preview)
+  return b ? [gripPointForHandle(b, handle)] : []
+}
+
 function applyRotate(
   ia: Extract<Interaction, { mode: "rotate" }>,
   world: Point,
-  shift: boolean
+  shift: boolean,
+  alt: boolean
 ) {
   const angleNow = Math.atan2(world.y - ia.center.y, world.x - ia.center.x)
-  let delta = angleNow - ia.startAngle
+  const delta = angleNow - ia.startAngle
   const step = Math.PI / 12
-  if (shift) delta = Math.round(delta / step) * step
+  // Gentle 15° snapping by default; Shift snaps hard, Alt rotates freely.
+  const snappedDelta = alt ? delta : snapRotation(delta, shift ? 0 : step * 0.25, step)
   const map = new Map(ia.originals.map((el) => [el.id, el]))
   const ids = ia.originals.map((el) => el.id)
   if (ia.originals.length === 1) {
     const el = ia.originals[0]
     const center = elementCenter(el)
-    let a = delta
-    if (shift) {
-      const targetRot = Math.round((el.rotation * DEG + delta) / step) * step
-      a = targetRot - el.rotation * DEG
-    }
-    useDoc.getState().updateElements(ids, () => rotateElementAbout(el, center, a))
+    // Snap the element's absolute orientation, not the drag delta, so the
+    // handle visually lands on 15° multiples of the element itself.
+    const target = el.rotation * DEG + snappedDelta
+    const snapped = alt ? target : snapRotation(target, shift ? 0 : step * 0.25, step)
+    useDoc
+      .getState()
+      .updateElements(ids, () => rotateElementAbout(el, center, snapped - el.rotation * DEG))
     return
   }
   useDoc.getState().updateElements(ids, (el) => {
     const base = map.get(el.id) ?? el
-    return rotateElementAbout(base, ia.center, delta)
+    return rotateElementAbout(base, ia.center, snappedDelta)
   })
+}
+
+/** Snap an angle to `step` multiples when within `tolerance`; 0 tolerance = hard snap. */
+function snapRotation(angle: number, tolerance: number, step: number): number {
+  const snapped = Math.round(angle / step) * step
+  if (tolerance <= 0) return snapped
+  return Math.abs(snapped - angle) <= tolerance ? snapped : angle
 }
 
 function isEditableTarget(target: EventTarget | null): boolean {
@@ -817,7 +1182,7 @@ function EmptyHint() {
       <div className="rounded-xl border border-dashed border-border/70 bg-background/50 px-6 py-4 text-center text-sm text-muted-foreground backdrop-blur-sm">
         Pick a tool on the right, then draw on the canvas.
         <br />
-        Drag to draw · Space or middle-mouse to pan · Ctrl + scroll to zoom
+        Drag to draw · Space or middle-mouse to pan · Scroll to zoom · Hold Alt to disable snapping
       </div>
     </div>
   )

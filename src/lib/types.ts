@@ -1,5 +1,18 @@
 export type ElementType = "text" | "image" | "line" | "shape" | "icon" | "stroke"
 
+export interface Shadow {
+  /** Shadow color (hex or rgba). */
+  color: string
+  /** Blur radius in world units. */
+  blur: number
+  /** Horizontal offset in world units. */
+  offsetX: number
+  /** Vertical offset in world units. */
+  offsetY: number
+  /** Shadow opacity, 0-1. */
+  opacity: number
+}
+
 export interface ElementBase {
   id: string
   type: ElementType
@@ -12,6 +25,12 @@ export interface ElementBase {
   name?: string
   hidden?: boolean
   locked?: boolean
+  /** Drop shadow. Rendered for every type except freehand strokes. */
+  shadow?: Shadow | null
+  /** Shared id of a group. Members select, move, and export together. */
+  groupId?: string
+  /** Display name, kept in sync across members of `groupId`. */
+  groupName?: string
 }
 
 export interface TextElement extends ElementBase {
@@ -23,6 +42,9 @@ export interface TextElement extends ElementBase {
   color: string
   align: "left" | "center" | "right"
   lineHeight: number
+  /** Outline color. Unused when `strokeWidth` is 0 or omitted. */
+  stroke?: string
+  strokeWidth?: number
 }
 
 export interface ImageElement extends ElementBase {
@@ -31,6 +53,9 @@ export interface ImageElement extends ElementBase {
   naturalWidth: number
   naturalHeight: number
   radius: number
+  /** Outline color. Unused when `strokeWidth` is 0 or omitted. */
+  stroke?: string
+  strokeWidth?: number
 }
 
 export interface LineElement extends ElementBase {
@@ -43,6 +68,8 @@ export interface LineElement extends ElementBase {
   color: string
   arrowStart: boolean
   arrowEnd: boolean
+  /** Round line caps; older lines without the field default to round. */
+  rounded?: boolean
 }
 
 export type ShapeKind =
@@ -53,10 +80,27 @@ export type ShapeKind =
   | "star"
   | "hexagon"
 
+export interface GradientStop {
+  /** Position along the gradient, 0-1. */
+  offset: number
+  color: string
+}
+
+export type GradientType = "linear" | "radial"
+
+export interface GradientFill {
+  type: GradientType
+  /** Linear gradient direction in degrees (0 = left→right, 90 = top→bottom). */
+  angle: number
+  stops: GradientStop[]
+}
+
 export interface ShapeElement extends ElementBase {
   type: "shape"
   shape: ShapeKind
   fill: string
+  /** When set and `filled`, paints the shape with a gradient instead of `fill`. */
+  gradient?: GradientFill | null
   stroke: string
   strokeWidth: number
   filled: boolean
@@ -71,6 +115,14 @@ export interface IconElement extends ElementBase {
   name: string
   color: string
   strokeWidth: number
+  /** Solid fill. Omitted means stroke-only (Lucide) or unfilled Material. */
+  filled?: boolean
+  fill?: string
+  /**
+   * Round stroke caps/joins for Lucide, or the rounded Material style.
+   * Omitted keeps the library default (round Lucide, outlined Material).
+   */
+  rounded?: boolean
 }
 
 export interface StrokePoint {

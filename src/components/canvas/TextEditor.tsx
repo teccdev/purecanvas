@@ -32,6 +32,7 @@ export function TextEditor() {
 
   const screen = worldToScreen({ x: el.x, y: el.y }, camera)
   const fontSize = el.fontSize * camera.zoom
+  const outline = el.strokeWidth && el.strokeWidth > 0 && el.stroke
 
   const commit = () => {
     const current = useDoc.getState().elements.find((e) => e.id === el.id)
@@ -64,7 +65,7 @@ export function TextEditor() {
         e.stopPropagation()
       }}
       onPointerDown={(e) => e.stopPropagation()}
-      className="absolute resize-none overflow-hidden border-0 bg-transparent p-0 outline-none"
+      className="absolute resize-none overflow-hidden border-0 bg-transparent p-0 outline-none select-text"
       style={{
         left: screen.x,
         top: screen.y,
@@ -75,6 +76,9 @@ export function TextEditor() {
         fontFamily: `"${el.fontFamily}", sans-serif`,
         color: el.color,
         lineHeight: el.lineHeight,
+        // SVG doubles the stroke width because it is centered and the fill covers
+        // the inner half; CSS text-stroke only shows its outer half, so double here.
+        WebkitTextStroke: outline ? `${(el.strokeWidth ?? 0) * 2}px ${el.stroke}` : undefined,
         textAlign: el.align,
         whiteSpace: "pre-wrap",
         transform: el.rotation ? `rotate(${el.rotation}deg)` : undefined,

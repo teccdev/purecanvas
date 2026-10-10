@@ -1,4 +1,5 @@
 import { useEffect } from "react"
+import { Analytics } from "@vercel/analytics/react"
 import { Canvas } from "@/components/canvas/Canvas"
 import { CoffeeButton } from "@/components/CoffeeButton"
 import { Toolbar } from "@/components/Toolbar"
@@ -54,6 +55,7 @@ export default function App() {
         )}
           </div>
           <Toaster />
+          <Analytics />
     </TooltipProvider>
   )
 }

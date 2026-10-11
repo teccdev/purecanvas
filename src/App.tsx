@@ -1,15 +1,7 @@
 import { useEffect, useState } from "react";
 import { Analytics } from "@vercel/analytics/react";
 import { Canvas } from "@/components/canvas/Canvas";
-import {
-    CircleDollarSign,
-    CodeXml,
-    Coffee,
-    DollarSign,
-    GitBranch,
-    Lightbulb,
-    Loader2,
-} from "lucide-react";
+import { CodeXml, DollarSign, Lightbulb, Loader2 } from "lucide-react";
 import { FloatingButton } from "@/components/FloatingButton";
 import { Toolbar } from "@/components/Toolbar";
 import { TopBar } from "@/components/TopBar";

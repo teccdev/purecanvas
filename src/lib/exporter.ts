@@ -88,7 +88,7 @@ function sanitizeSceneForExport(wrapper: SVGGElement): { content: string; defs: 
     // Hit-area elements are identifiable by their transparent fill/stroke:
     // - <rect fill="transparent" pointer-events="all">  (box elements)
     // - <line stroke="transparent"> / <path stroke="transparent">  (line/stroke elements)
-    const visualChildren: Element[] = []
+    const visualChildren: globalThis.Element[] = []
     Array.from(group.children).forEach((child) => {
       const tag = child.tagName.toLowerCase()
       const isHitArea =

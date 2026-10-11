@@ -51,7 +51,12 @@ export function IconPicker({
               {lib === "lucide" && Current ? (
                 <Current className="size-4 text-foreground" />
               ) : (
-                <img src={materialUrl(name)} alt="" className="size-4 dark:invert" />
+                <img
+                    src={materialUrl(name)}
+                    alt=""
+                    loading="lazy"
+                    className="size-4 dark:invert"
+                />
               )}
               <span className="truncate">{name}</span>
             </span>
@@ -124,7 +129,12 @@ export function IconPicker({
                     lib === "material" && name === n && "bg-secondary"
                   )}
                 >
-                  <img src={materialUrl(n)} alt={n} className="size-5 dark:invert" />
+                  <img
+                    src={materialUrl(n)}
+                    alt={n}
+                    loading="lazy"
+                    className="size-5 dark:invert"
+                  />
                 </button>
               ))}
             </div>

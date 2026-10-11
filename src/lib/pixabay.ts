@@ -13,6 +13,8 @@ export interface StockImage {
   webformatHeight: number
   largeImageURL: string
   user: string
+  /** URL to the original vector file (SVG) if available. Requires full API access. */
+  vectorURL?: string
 }
 
 export interface PixabaySearchResult {
@@ -86,6 +88,15 @@ export function readDragPayload(e: React.DragEvent): { url: string; user: string
   const host = parsedUrl.hostname.toLowerCase()
   if (host !== "pixabay.com" && !host.endsWith(".pixabay.com")) return null
   return { url: parsedUrl.href, user }
+}
+
+/** Fetch a stock image's SVG (vector) data, throwing on any failure. */
+export async function fetchSvgBlob(url: string): Promise<Blob> {
+  const res = await fetch(url)
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  const text = await res.text()
+  if (!text.includes("<svg")) throw new Error("Not an SVG")
+  return new Blob([text], { type: "image/svg+xml" })
 }
 
 /** Fetch a stock image as a Blob, with a canvas fallback if CORS blocks the fetch. */

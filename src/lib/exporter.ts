@@ -37,6 +37,94 @@ export const EXPORT_PADDINGS: Record<ExportPadding, number> = {
   none: 0,
 }
 
+/**
+ * Sanitize the scene DOM copy for export, ensuring consistent cross-platform
+ * rendering across SVG 1.1 and SVG 2 viewers.
+ *
+ * The in-app scene DOM contains artifacts that cause inconsistent rendering:
+ *
+ * 1. **SVG 2 stacking contexts**: `opacity < 1` and `filter` on each element's
+ *    group wrapper (`<g>`) create stacking contexts in SVG 2. When some elements
+ *    have these (stacking contexts) and others don't, renderers that implement
+ *    SVG 2 stacking rules may paint them in a different order than pure document
+ *    order — elements on a "high layer" can appear behind others in some apps
+ *    but render correctly in others. Fix: move `opacity`/`filter` from the group
+ *    wrapper to an inner `<g>` wrapping only the visual content, so the
+ *    top-level group has no stacking-context-triggering properties.
+ *
+ * 2. **In-app interaction artifacts**: `style="pointer-events: auto/none"` and
+ *    transparent hit-area `<rect>`/`<line>`/`<path>` elements exist only for
+ *    pointer detection in the app and serve no purpose in exported SVG.
+ *
+ * 3. **Scattered `<defs>`**: Each element renders its own `<defs>` block for
+ *    filters, gradients, markers, and clip paths. Hoisting them to a single
+ *    root-level `<defs>` is cleaner and avoids issues with definitions inside
+ *    rendered content groups.
+ */
+function sanitizeSceneForExport(wrapper: SVGGElement): { content: string; defs: string } {
+  // 1. Hoist all <defs> blocks (filters, gradients, markers, clip paths) to
+  //    root-level content. Only collect defs that are inside element groups.
+  const hoistedDefs: string[] = []
+  wrapper.querySelectorAll("[data-element-id] defs").forEach((defs) => {
+    const inner = defs.innerHTML.trim()
+    if (inner) hoistedDefs.push(inner)
+    defs.remove()
+  })
+
+  // 2. Sanitize each element group wrapper.
+  wrapper.querySelectorAll("[data-element-id]").forEach((g) => {
+    const group = g as SVGGElement
+
+    // Read stacking-context-triggering attributes before stripping them.
+    const opacity = group.getAttribute("opacity")
+    const filter = group.getAttribute("filter")
+
+    // Remove in-app interaction attributes from the wrapper <g>.
+    group.removeAttribute("style")
+    group.removeAttribute("opacity")
+    group.removeAttribute("filter")
+
+    // Remove transparent hit-area elements and collect visual children.
+    // Hit-area elements are identifiable by their transparent fill/stroke:
+    // - <rect fill="transparent" pointer-events="all">  (box elements)
+    // - <line stroke="transparent"> / <path stroke="transparent">  (line/stroke elements)
+    const visualChildren: Element[] = []
+    Array.from(group.children).forEach((child) => {
+      const tag = child.tagName.toLowerCase()
+      const isHitArea =
+        (tag === "rect" &&
+          child.getAttribute("fill") === "transparent" &&
+          child.getAttribute("pointer-events") === "all") ||
+        ((tag === "line" || tag === "path") &&
+          child.getAttribute("stroke") === "transparent")
+      if (isHitArea) {
+        child.remove()
+      } else {
+        visualChildren.push(child)
+      }
+    })
+
+    // If the group had opacity < 1 or a filter, wrap visual content in an inner
+    // <g> so the stacking-context trigger is on the inner wrapper (which has no
+    // siblings competing for paint order) rather than on the group wrapper
+    // (which is a direct sibling of other element groups).
+    const hasOpacity = opacity != null && opacity !== "1"
+    const hasFilter = filter != null && filter !== "none"
+    if (visualChildren.length > 0 && (hasOpacity || hasFilter)) {
+      const inner = document.createElementNS(SVG_NS, "g")
+      if (hasOpacity) inner.setAttribute("opacity", opacity!)
+      if (hasFilter) inner.setAttribute("filter", filter!)
+      visualChildren.forEach((child) => inner.appendChild(child))
+      group.appendChild(inner)
+    }
+  })
+
+  return {
+    content: wrapper.innerHTML,
+    defs: hoistedDefs.length > 0 ? hoistedDefs.join("") : "",
+  }
+}
+
 /** Axis-aligned visual extent of one element: its (rotated) geometry expanded
  *  for stroke/border thickness, line caps/arrowheads, and drop shadows. */
 function elementVisualBox(el: Element): {
@@ -170,11 +258,16 @@ export async function buildSvg(
     if (!id || !keep.has(id)) node.remove()
   })
 
-  const content = wrapper.innerHTML
+  // Sanitize the scene DOM for export: strip in-app interaction artifacts,
+  // hoist <defs> to root, and prevent SVG 2 stacking-context inconsistencies
+  // that cause cross-platform rendering differences.
+  const { content, defs: hoistedDefs } = sanitizeSceneForExport(wrapper)
   const bg = backgroundRect(background, width, height, minX, minY)
 
   const svg = `<svg xmlns="${SVG_NS}" xmlns:xlink="http://www.w3.org/1999/xlink" width="${width}" height="${height}" viewBox="${minX} ${minY} ${width} ${height}">${
-    fontCss ? `<defs><style>${fontCss}</style></defs>` : ""
+    fontCss || hoistedDefs
+      ? `<defs>${fontCss ? `<style>${fontCss}</style>` : ""}${hoistedDefs}</defs>`
+      : ""
   }${bg}${content}</svg>`
 
   return { svg, width, height, cssWidth: width, cssHeight: height }

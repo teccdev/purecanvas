@@ -6,6 +6,7 @@ import { createImageElement } from "@/lib/assets"
 import { screenToWorld } from "@/lib/geometry"
 import {
   fetchImageBlob,
+  fetchSvgBlob,
   searchPixabay,
   writeDragPayload,
   type PixabayImageType,
@@ -87,7 +88,20 @@ export function StockImagePanel() {
       const { projectId, addElements, camera } = useDoc.getState()
       setPlacingId(image.id)
       try {
-        const blob = await fetchImageBlob(image.webformatURL)
+        let blob: Blob
+        // Prefer the vector (SVG) URL when available so imported assets stay
+        // vector. Fall back to the raster webformatURL if the vector fetch
+        // fails (e.g. account not approved for full API access, network error,
+        // or non-SVG content).
+        if (image.vectorURL) {
+          try {
+            blob = await fetchSvgBlob(image.vectorURL)
+          } catch {
+            blob = await fetchImageBlob(image.webformatURL)
+          }
+        } else {
+          blob = await fetchImageBlob(image.webformatURL)
+        }
         const center = screenToWorld(
           { x: window.innerWidth / 2, y: window.innerHeight / 2 },
           camera
@@ -173,6 +187,14 @@ export function StockImagePanel() {
                   loading="lazy"
                   className="size-full object-cover transition-transform group-hover:scale-105"
                 />
+                {img.vectorURL && (
+                  <span
+                    title="Vector SVG available — will import as vector"
+                    className="absolute top-1 left-1 rounded bg-black/60 px-[3px] py-[1px] text-[8px] font-medium text-white uppercase"
+                  >
+                    Vector
+                  </span>
+                )}
                 {placingId === img.id && (
                   <span className="absolute inset-0 flex items-center justify-center bg-background/60">
                     <Loader2 className="size-4 animate-spin text-primary" />

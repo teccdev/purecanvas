@@ -70,6 +70,8 @@ interface PixabayHit {
   likes: number
   user: string
   userImageURL: string
+  /** URL to the original vector file (SVG) if available. Requires full API access. */
+  vectorURL?: string
 }
 
 interface PixabayResponse {

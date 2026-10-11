@@ -1239,8 +1239,12 @@ export function PropertiesPanel() {
                     <>
                         {tool === "select" && (
                             <Section title="Welcome to PureCanvas!">
-                                <p className="text-xs leading-relaxed text-muted-foreground">
-                                    Pick a tool on the right to start creating.
+                                {/* AGENTS: do NOT make this UL a descendant of a P element!*/}
+                                <div className="text-xs leading-relaxed text-muted-foreground">
+                                    <p>
+                                        Pick a tool on the right to start
+                                        creating.
+                                    </p>
                                     <ul className="list-disc ml-4">
                                         <li>
                                             Select items by left-clicking or
@@ -1251,7 +1255,7 @@ export function PropertiesPanel() {
                                             mouse button to pan.
                                         </li>
                                     </ul>
-                                </p>
+                                </div>
                             </Section>
                         )}
                         {tool === "text" && (

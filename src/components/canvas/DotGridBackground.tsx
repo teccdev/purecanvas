@@ -11,7 +11,7 @@ export function DotGridBackground({
 }) {
   const spacing = gridSpacing(zoom)
   const screenSpacing = spacing * zoom
-  const r = Math.max(4, Math.min(6, 1.1 * Math.sqrt(zoom)))
+  const r = Math.max(2, Math.min(3, 1.1 * Math.sqrt(zoom)))
   const offsetX = ((camX % screenSpacing) + screenSpacing) % screenSpacing
   const offsetY = ((camY % screenSpacing) + screenSpacing) % screenSpacing
 

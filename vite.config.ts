@@ -63,6 +63,13 @@ export default defineConfig(({ mode }) => {
           if (!params.has('key')) {
             params.set('key', pixabayKey)
           }
+          // Map the internal "type" param to Pixabay's "image_type" — mirrors
+          // the production API route (api/pixabay.ts) so results are identical.
+          const type = params.get('type')
+          if (type !== null) {
+            params.delete('type')
+            params.set('image_type', type)
+          }
           const target = `https://pixabay.com/api/?${params.toString()}`
           // Never log the API key: redact it in dev logs.
           const logged = new URLSearchParams(params)

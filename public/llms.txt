@@ -1,0 +1,15 @@
+# PureCanvas
+
+> A local-first vector design app for the browser.
+
+PureCanvas is a privacy-first, browser-based vector design tool. Everything is
+stored locally in your browser — no account, no server, no uploads. Works fully offline.
+PureCanvas is also open-source and designed to be user-friendly and agent-friendly.
+
+## Key pages
+- [Home](https://purecanvas.vercel.app/): The full vector design editor with an
+  infinite dot-grid canvas, tools (Select, Text, Image, Line, Shape, Icon, Pen),
+  layers, undo/redo, and export to SVG, PNG, WEBP, or direct clipboard copy.
+
+## Source
+- [GitHub](https://github.com/teccdev): Source code and development guide.

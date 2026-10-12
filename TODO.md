@@ -6,10 +6,11 @@
 > add parenthesized notes at the end if necessary.
 
 ## Critical
-- inconsistent svg rendering (addressed: sanitized export. Need: testing)
-- pixabay filters
+- 
 
 ## Current
+~ inconsistent svg rendering (addressed: sanitized export. Should test more but no longer critical.)
+~ pixabay filters (addressed. Waiting on API access approval.)
 
 ## Later
 - share menu?

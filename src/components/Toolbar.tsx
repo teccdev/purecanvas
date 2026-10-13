@@ -112,7 +112,7 @@ export function Toolbar() {
     : TOOLS
 
   const rootClass = isMobile
-    ? "pointer-events-none absolute inset-x-0 bottom-0 z-30 flex flex-col items-center gap-2 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]"
+    ? "pointer-events-none absolute inset-x-0 bottom-0 z-30 flex flex-col items-end justify-end gap-2 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]"
     : "pointer-events-none absolute right-4 top-1/2 z-30 flex -translate-y-1/2 items-center gap-2"
 
   const railClass = bottomBar

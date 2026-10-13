@@ -68,7 +68,7 @@ export default function App() {
                         aria-pressed={propertiesOpen}
                         onClick={toggleProperties}
                         className={cn(
-                            "absolute left-4 bottom-20 z-30 flex size-11 items-center justify-center rounded-2xl border border-border shadow-lg backdrop-blur-md transition-colors",
+                            "absolute bottom-[calc(0.75rem+env(safe-area-inset-bottom))] left-3 z-30 flex size-11 items-center justify-center rounded-2xl border border-border shadow-lg backdrop-blur-md transition-colors",
                             propertiesOpen
                                 ? "bg-primary text-primary-foreground"
                                 : "bg-background/85 text-muted-foreground hover:bg-accent hover:text-foreground",

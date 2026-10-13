@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://purecanvas.vercel.app/sitemap.xml
+Sitemap: https://www.purecanvas.app/sitemap.xml

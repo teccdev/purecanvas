@@ -7,7 +7,7 @@ stored locally in your browser — no account, no server, no uploads. Works full
 PureCanvas is also open-source and designed to be user-friendly and agent-friendly.
 
 ## Key pages
-- [Home](https://purecanvas.vercel.app/): The full vector design editor with an
+- [Home](https://www.purecanvas.app/): The full vector design editor with an
   infinite dot-grid canvas, tools (Select, Text, Image, Line, Shape, Icon, Pen),
   layers, undo/redo, and export to SVG, PNG, WEBP, or direct clipboard copy.
 

@@ -198,6 +198,7 @@ export function ExportMenu() {
   const setExportScope = useUI((s) => s.setExportScope)
   const exportFormat = useUI((s) => s.exportFormat)
   const setExportFormat = useUI((s) => s.setExportFormat)
+  const isMobile = useUI((s) => s.isMobile)
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const [status, setStatus] = useState<string | null>(null)
@@ -268,10 +269,16 @@ export function ExportMenu() {
       <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger
         render={
-          <Button variant="outline" size="sm" disabled={busy}>
-            {busy ? <Loader2 data-icon="inline-start" className="animate-spin" /> : <Download data-icon="inline-start" />}
-            Export
-          </Button>
+          isMobile ? (
+            <Button variant="outline" size="icon-sm" aria-label="Export" disabled={busy}>
+              {busy ? <Loader2 className="animate-spin" /> : <Download />}
+            </Button>
+          ) : (
+            <Button variant="outline" size="sm" disabled={busy}>
+              {busy ? <Loader2 data-icon="inline-start" className="animate-spin" /> : <Download data-icon="inline-start" />}
+              Export
+            </Button>
+          )
         }
       />
       <DropdownMenuContent align="end" className="w-64">

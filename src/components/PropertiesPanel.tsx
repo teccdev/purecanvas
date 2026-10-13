@@ -12,6 +12,7 @@ import {
     Plus,
     Trash2,
     Ungroup,
+    X,
 } from "lucide-react";
 import { IconPicker } from "./IconPicker";
 import { StockImagePanel } from "./StockImagePanel";
@@ -21,6 +22,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Drawer, DrawerClose, DrawerContent } from "@/components/ui/drawer";
 import {
     Select,
     SelectContent,
@@ -520,6 +522,9 @@ export function PropertiesPanel() {
     const setDefaults = useUI((s) => s.setDefaults);
     const tool = useUI((s) => s.tool);
     const penVariant = useUI((s) => s.penVariant);
+    const isMobile = useUI((s) => s.isMobile);
+    const propertiesOpen = useUI((s) => s.propertiesOpen);
+    const setPropertiesOpen = useUI((s) => s.setPropertiesOpen);
 
     const selected = elements.filter((el) => selectedIds.includes(el.id));
     const primary = selected[0];
@@ -579,10 +584,9 @@ export function PropertiesPanel() {
         (el) => el.type !== "line" && el.type !== "stroke",
     );
 
-    return (
-        <div className="pointer-events-auto absolute left-4 top-20 z-30 w-64 max-h-[calc(100dvh-6rem)] overflow-hidden rounded-2xl border border-border bg-background/85 shadow-lg backdrop-blur-md">
-            <ScrollArea className="max-h-[calc(100dvh-6rem)]">
-                {selected.length > 0 ? (
+    const body = (
+        <>
+            {selected.length > 0 ? (
                     <>
                         <Section
                             title={`${
@@ -1573,8 +1577,51 @@ export function PropertiesPanel() {
                             </Section>
                         )}
                     </>
-                )}
-            </ScrollArea>
+            )}
+        </>
+    );
+
+    const scroll = (
+        <ScrollArea
+            className={cn(
+                isMobile ? "min-h-0 flex-1" : "max-h-[calc(100dvh-6rem)]",
+            )}
+        >
+            {body}
+        </ScrollArea>
+    );
+
+    if (isMobile) {
+        return (
+            <Drawer open={propertiesOpen} onOpenChange={setPropertiesOpen}>
+                <DrawerContent
+                    side="right"
+                    showCloseButton={false}
+                    aria-label="Properties"
+                >
+                    <div className="flex items-center justify-between border-b border-border px-3 py-2">
+                        <p className="text-sm font-semibold">Properties</p>
+                        <DrawerClose
+                            render={
+                                <Button
+                                    variant="ghost"
+                                    size="icon-sm"
+                                    aria-label="Close properties"
+                                />
+                            }
+                        >
+                            <X className="size-4" />
+                        </DrawerClose>
+                    </div>
+                    {scroll}
+                </DrawerContent>
+            </Drawer>
+        );
+    }
+
+    return (
+        <div className="pointer-events-auto absolute left-4 top-20 z-30 w-64 max-h-[calc(100dvh-6rem)] overflow-hidden rounded-2xl border border-border bg-background/85 shadow-lg backdrop-blur-md">
+            {scroll}
         </div>
     );
 }

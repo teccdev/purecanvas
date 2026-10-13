@@ -18,6 +18,7 @@ import {
 } from "lucide-react"
 import type { ReactNode } from "react"
 import { useUI } from "@/store/useUI"
+import { useMediaQuery } from "@/hooks/useMediaQuery"
 import type { PenVariant, ShapeKind, Tool } from "@/lib/types"
 import { TOOL_SHORTCUTS } from "@/lib/tools"
 import { cn } from "@/lib/utils"
@@ -54,12 +55,14 @@ function RailButton({
   onClick,
   label,
   shortcuts,
+  compact,
   children,
 }: {
   active?: boolean
   onClick: () => void
   label: string
   shortcuts?: string[]
+  compact?: boolean
   children: ReactNode
 }) {
   return (
@@ -69,21 +72,24 @@ function RailButton({
       aria-label={label}
       aria-pressed={active}
       className={cn(
-        "group relative flex size-11 items-center justify-center rounded-xl",
+        "group relative flex items-center justify-center rounded-xl",
+        compact ? "size-9" : "size-11",
         active
           ? "bg-primary text-primary-foreground"
           : "text-muted-foreground hover:bg-accent hover:text-foreground"
       )}
     >
       {children}
-      <span className="pointer-events-none absolute right-[calc(100%+10px)] top-1/2 flex max-w-0 -translate-y-1/2 items-center overflow-hidden rounded-md bg-foreground py-1.5 text-xs font-medium whitespace-nowrap text-background opacity-0 transition-all duration-200 ease-out group-hover:max-w-56 group-hover:px-2.5 group-hover:opacity-100">
-        {label}
-        {shortcuts?.[0] && (
-          <kbd className="ml-2 rounded border border-background/25 px-1 text-[10px] opacity-70">
-            {shortcuts[0].toUpperCase()}
-          </kbd>
-        )}
-      </span>
+      {!compact && (
+        <span className="pointer-events-none absolute right-[calc(100%+10px)] top-1/2 flex max-w-0 -translate-y-1/2 items-center overflow-hidden rounded-md bg-foreground py-1.5 text-xs font-medium whitespace-nowrap text-background opacity-0 transition-all duration-200 ease-out group-hover:max-w-56 group-hover:px-2.5 group-hover:opacity-100">
+          {label}
+          {shortcuts?.[0] && (
+            <kbd className="ml-2 rounded border border-background/25 px-1 text-[10px] opacity-70">
+              {shortcuts[0].toUpperCase()}
+            </kbd>
+          )}
+        </span>
+      )}
     </button>
   )
 }
@@ -95,11 +101,35 @@ export function Toolbar() {
   const setPenVariant = useUI((s) => s.setPenVariant)
   const shapeKind = useUI((s) => s.defaults.shapeKind)
   const setDefaults = useUI((s) => s.setDefaults)
+  const isMobile = useUI((s) => s.isMobile)
+  const portrait = useMediaQuery("(orientation: portrait)")
+
+  // Portrait phones get a bottom horizontal bar; landscape phones / narrow
+  // windows get a compact 2×3 grid in the same corner as the desktop rail.
+  const bottomBar = isMobile && portrait
+  const tools = isMobile
+    ? TOOLS.filter((t) => t.id !== "select")
+    : TOOLS
+
+  const rootClass = bottomBar
+    ? "pointer-events-none absolute inset-x-0 bottom-0 z-30 flex flex-col items-center gap-2 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]"
+    : "pointer-events-none absolute right-4 top-1/2 z-30 flex -translate-y-1/2 items-center gap-2"
+
+  const railClass = bottomBar
+    ? "pointer-events-auto flex flex-row gap-1 rounded-2xl border border-border bg-background/85 p-1.5 shadow-lg backdrop-blur-md"
+    : isMobile
+      ? "pointer-events-auto grid grid-cols-2 gap-1 rounded-2xl border border-border bg-background/85 p-1.5 shadow-lg backdrop-blur-md"
+      : "pointer-events-auto flex flex-col gap-1 rounded-2xl border border-border bg-background/85 p-1.5 shadow-lg backdrop-blur-md"
+
+  const submenuClass = cn(
+    "pointer-events-auto rounded-2xl border border-border bg-background/85 p-1.5 shadow-lg backdrop-blur-md",
+    bottomBar ? "flex flex-row gap-1" : "flex flex-col gap-1"
+  )
 
   return (
-    <div className="pointer-events-none absolute right-4 top-1/2 z-30 flex -translate-y-1/2 items-center gap-2">
+    <div className={rootClass}>
       {tool === "pen" && (
-        <div className="pointer-events-auto flex flex-col gap-1 rounded-2xl border border-border bg-background/85 p-1.5 shadow-lg backdrop-blur-md">
+        <div className={submenuClass}>
           {PEN_VARIANTS.map((v) => (
             <button
               key={v.id}
@@ -115,9 +145,11 @@ export function Toolbar() {
               )}
             >
               <v.icon className="size-4" />
-              <span className="pointer-events-none absolute right-[calc(100%+8px)] top-1/2 flex max-w-0 -translate-y-1/2 overflow-hidden rounded-md bg-foreground py-1.5 text-[11px] whitespace-nowrap text-background opacity-0 transition-all duration-200 group-hover:max-w-56 group-hover:px-2 group-hover:opacity-100">
-                {v.label}
-              </span>
+              {!isMobile && (
+                <span className="pointer-events-none absolute right-[calc(100%+8px)] top-1/2 flex max-w-0 -translate-y-1/2 overflow-hidden rounded-md bg-foreground py-1.5 text-[11px] whitespace-nowrap text-background opacity-0 transition-all duration-200 group-hover:max-w-56 group-hover:px-2 group-hover:opacity-100">
+                  {v.label}
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -143,8 +175,8 @@ export function Toolbar() {
           ))}
         </div>
       )}
-      <div className="pointer-events-auto flex flex-col gap-1 rounded-2xl border border-border bg-background/85 p-1.5 shadow-lg backdrop-blur-md">
-        {TOOLS.map((t) => (
+      <div className={railClass}>
+        {tools.map((t) => (
           <RailButton
             key={t.id}
             active={tool === t.id}
@@ -154,8 +186,9 @@ export function Toolbar() {
             }}
             label={t.label}
             shortcuts={t.shortcuts}
+            compact={isMobile}
           >
-            <t.icon className="size-5" />
+            <t.icon className={isMobile ? "size-4" : "size-5"} />
           </RailButton>
         ))}
       </div>

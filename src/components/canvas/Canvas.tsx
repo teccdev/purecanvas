@@ -72,6 +72,19 @@ type Interaction =
   | { mode: "draw-line"; startWorld: Point }
   | { mode: "draw-pen"; points: StrokePoint[] }
   | { mode: "erase" }
+  | {
+      mode: "touch-pan"
+      lastClient: Point
+      startClient: Point
+      startWorld: Point
+      moved: boolean
+    }
+  | {
+      mode: "pinch"
+      startDist: number
+      startZoom: number
+      focalWorld: Point
+    }
 
 type SnapIndicator = {
   point: Point | null
@@ -82,11 +95,19 @@ type SnapIndicator = {
 /** Snap threshold in screen pixels, converted to world units per zoom. */
 const SNAP_THRESHOLD_PX = 6
 
+/** How long (ms) a finger must rest before a drag becomes a box-select. */
+const LONG_PRESS_MS = 2000
+/** How far (screen px) a finger may move before a long-press is cancelled. */
+const TOUCH_MOVE_THRESHOLD = 8
+
 export function Canvas() {
   const svgRef = useRef<SVGSVGElement | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const interaction = useRef<Interaction | null>(null)
   const marqueeRef = useRef<{ start: Point; end: Point } | null>(null)
+  // Active touch pointers, in SVG-local screen coordinates, for pinch-zoom.
+  const touchPoints = useRef<Map<number, Point>>(new Map())
+  const longPressTimer = useRef<number | null>(null)
 
   const elements = useDoc((s) => s.elements)
   const camera = useDoc((s) => s.camera)
@@ -135,6 +156,16 @@ export function Canvas() {
       snap ? { x: world.x + snap.dx, y: world.y + snap.dy } : world,
     []
   )
+
+  const cancelLongPress = useCallback(() => {
+    if (longPressTimer.current !== null) {
+      window.clearTimeout(longPressTimer.current)
+      longPressTimer.current = null
+    }
+  }, [])
+
+  // Never leave a pending long-press timer behind on unmount.
+  useEffect(() => () => cancelLongPress(), [cancelLongPress])
 
   // Space key pans.
   useEffect(() => {
@@ -300,6 +331,30 @@ export function Canvas() {
       const world = getWorld(e)
       const ui = useUI.getState()
 
+      // Mobile touch: track pointers for pinch-zoom. A second finger always
+      // starts a pinch, cancelling whatever the first finger was doing.
+      if (ui.isMobile && e.pointerType === "touch") {
+        const screen = getScreen(e)
+        touchPoints.current.set(e.pointerId, screen)
+        if (touchPoints.current.size >= 2) {
+          cancelLongPress()
+          const pts = [...touchPoints.current.values()]
+          const [a, b] = pts
+          const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }
+          const dist = Math.hypot(a.x - b.x, a.y - b.y) || 1
+          const cam = useDoc.getState().camera
+          interaction.current = {
+            mode: "pinch",
+            startDist: dist,
+            startZoom: cam.zoom,
+            focalWorld: screenToWorld(mid, cam),
+          }
+          e.currentTarget.setPointerCapture(e.pointerId)
+          e.preventDefault()
+          return
+        }
+      }
+
       if (e.button === 1 || spaceDown) {
         interaction.current = {
           mode: "pan",
@@ -351,6 +406,29 @@ export function Canvas() {
               .elements.filter((el) => ids.includes(el.id) && !el.locked)
               .map((el) => structuredClone(el))
             interaction.current = { mode: "move", startWorld: world, originals, pushed: false }
+          } else if (ui.isMobile && e.pointerType === "touch") {
+            // Empty-space touch: pan by default; hold ~2s to box-select.
+            if (!e.shiftKey) ui.clearSelection()
+            interaction.current = {
+              mode: "touch-pan",
+              lastClient: { x: e.clientX, y: e.clientY },
+              startClient: { x: e.clientX, y: e.clientY },
+              startWorld: world,
+              moved: false,
+            }
+            cancelLongPress()
+            longPressTimer.current = window.setTimeout(() => {
+              const ia = interaction.current
+              if (ia?.mode === "touch-pan" && !ia.moved) {
+                interaction.current = {
+                  mode: "marquee",
+                  startWorld: ia.startWorld,
+                  additive: false,
+                }
+                marqueeRef.current = { start: ia.startWorld, end: ia.startWorld }
+                setMarquee({ start: ia.startWorld, end: ia.startWorld })
+              }
+            }, LONG_PRESS_MS)
           } else {
             if (!e.shiftKey && !e.metaKey && !e.ctrlKey) ui.clearSelection()
             interaction.current = { mode: "marquee", startWorld: world, additive: e.shiftKey }
@@ -453,11 +531,14 @@ export function Canvas() {
       }
       e.currentTarget.setPointerCapture(e.pointerId)
     },
-    [eraseAt, getSnap, getWorld, snappedPoint, spaceDown, startResizeOrRotate]
+    [cancelLongPress, eraseAt, getScreen, getSnap, getWorld, snappedPoint, spaceDown, startResizeOrRotate]
   )
 
   const onPointerMove = useCallback(
     (e: ReactPointerEvent<SVGSVGElement>) => {
+      if (e.pointerType === "touch" && touchPoints.current.has(e.pointerId)) {
+        touchPoints.current.set(e.pointerId, getScreen(e))
+      }
       const ia = interaction.current
       if (!ia) return
       const world = getWorld(e)
@@ -471,6 +552,46 @@ export function Canvas() {
           const cam = useDoc.getState().camera
           useDoc.getState().setCamera({ x: cam.x + dx, y: cam.y + dy })
           ia.lastClient = { x: e.clientX, y: e.clientY }
+          break
+        }
+        case "touch-pan": {
+          // Promote to a pan once the finger clears the small threshold; a
+          // stationary hold instead becomes a box-select via the long-press
+          // timer (which flips the interaction to `marquee`).
+          if (
+            !ia.moved &&
+            Math.hypot(
+              e.clientX - ia.startClient.x,
+              e.clientY - ia.startClient.y
+            ) > TOUCH_MOVE_THRESHOLD
+          ) {
+            ia.moved = true
+            cancelLongPress()
+          }
+          if (ia.moved) {
+            const dx = e.clientX - ia.lastClient.x
+            const dy = e.clientY - ia.lastClient.y
+            const cam = useDoc.getState().camera
+            useDoc.getState().setCamera({ x: cam.x + dx, y: cam.y + dy })
+          }
+          ia.lastClient = { x: e.clientX, y: e.clientY }
+          ia.startWorld = world
+          break
+        }
+        case "pinch": {
+          const pts = [...touchPoints.current.values()]
+          if (pts.length < 2) break
+          const [a, b] = pts
+          const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }
+          const dist = Math.hypot(a.x - b.x, a.y - b.y) || 1
+          const zoom = clamp(ia.startZoom * (dist / ia.startDist), 0.05, 8)
+          useDoc
+            .getState()
+            .setCamera({
+              zoom,
+              x: mid.x - ia.focalWorld.x * zoom,
+              y: mid.y - ia.focalWorld.y * zoom,
+            })
           break
         }
         case "marquee": {
@@ -582,7 +703,7 @@ export function Canvas() {
         }
       }
     },
-    [eraseAt, getSnap, getWorld, snappedPoint]
+    [cancelLongPress, eraseAt, getScreen, getSnap, getWorld, snappedPoint]
   )
 
   const finalizeStroke = useCallback(
@@ -610,11 +731,19 @@ export function Canvas() {
     []
   )
 
-  const onPointerUp = useCallback(() => {
-    const ia = interaction.current
-    interaction.current = null
-    const d = useUI.getState().defaults
-    setSnapIndicator(null)
+  const onPointerUp = useCallback(
+    (e: ReactPointerEvent<SVGSVGElement>) => {
+      if (e.pointerType === "touch") touchPoints.current.delete(e.pointerId)
+      cancelLongPress()
+      const ia = interaction.current
+      if (ia?.mode === "pinch") {
+        // Stay in pinch mode until fewer than two fingers remain.
+        if (touchPoints.current.size < 2) interaction.current = null
+        return
+      }
+      interaction.current = null
+      const d = useUI.getState().defaults
+      setSnapIndicator(null)
 
     if (ia?.mode === "marquee") {
       const m = marqueeRef.current
@@ -678,7 +807,7 @@ export function Canvas() {
     } else {
       setDraft(null)
     }
-  }, [draft, finalizeStroke])
+  }, [cancelLongPress, draft, finalizeStroke])
 
   const onDoubleClick = useCallback(
     (e: ReactMouseEvent<SVGSVGElement>) => {

@@ -2,6 +2,7 @@ import {
     Layers,
     Fullscreen,
     Moon,
+    PanelRight,
     Redo2,
     Sun,
     Undo2,
@@ -28,6 +29,9 @@ export function TopBar() {
     const layersOpen = useUI((s) => s.layersOpen);
     const setLayersOpen = useUI((s) => s.setLayersOpen);
     const requestZoom = useUI((s) => s.requestZoom);
+    const isMobile = useUI((s) => s.isMobile);
+    const propertiesOpen = useUI((s) => s.propertiesOpen);
+    const setPropertiesOpen = useUI((s) => s.setPropertiesOpen);
 
     const copyLogo = async () => {
         // Rasterize the SVG logo to a PNG so it pastes like any image
@@ -91,25 +95,139 @@ export function TopBar() {
         });
     };
 
+    const logo = (
+        <img
+            src="/favicon.svg"
+            width={28}
+            height={28}
+            className="pl-1.5 cursor-copy"
+            onClick={async () => {
+                try {
+                    await copyLogo();
+                } catch {
+                    toast.add({
+                        title: "Failed to copy logo",
+                        type: "error",
+                    });
+                }
+            }}
+        />
+    );
+
+    const zoomGroup = (
+        <>
+            <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label="Zoom out"
+                onClick={() => requestZoom(camera.zoom / 1.2)}
+            >
+                <ZoomOut />
+            </Button>
+            <span className="w-10 text-center text-xs tabular-nums text-muted-foreground">
+                {Math.round(camera.zoom * 100)}%
+            </span>
+            <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label="Zoom in"
+                onClick={() => requestZoom(camera.zoom * 1.2)}
+            >
+                <ZoomIn />
+            </Button>
+            <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label="Fit to view"
+                onClick={fitView}
+            >
+                <Fullscreen />
+            </Button>
+        </>
+    );
+
+    const viewGroup = (
+        <>
+            <Button
+                variant={layersOpen ? "secondary" : "ghost"}
+                size="icon-sm"
+                aria-label="Toggle layers"
+                aria-pressed={layersOpen}
+                onClick={() => setLayersOpen(!layersOpen)}
+            >
+                <Layers />
+            </Button>
+            <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label="Toggle theme"
+                onClick={toggleTheme}
+            >
+                {theme === "dark" ? <Sun /> : <Moon />}
+            </Button>
+            {isMobile && (
+                <Button
+                    variant={propertiesOpen ? "secondary" : "ghost"}
+                    size="icon-sm"
+                    aria-label="Toggle properties"
+                    aria-pressed={propertiesOpen}
+                    onClick={() => setPropertiesOpen(!propertiesOpen)}
+                >
+                    <PanelRight />
+                </Button>
+            )}
+            <ProjectsDialog />
+            <ExportMenu />
+        </>
+    );
+
+    if (isMobile) {
+        return (
+            <header className="pointer-events-none absolute inset-x-0 top-0 z-40 flex flex-col gap-1.5 p-2">
+                <div className="pointer-events-auto flex items-center gap-1 rounded-2xl border border-border bg-background/85 p-1.5 shadow-lg backdrop-blur-md">
+                    {logo}
+                    <Input
+                        value={projectName}
+                        onChange={(e) =>
+                            useDoc.getState().setProjectName(e.target.value)
+                        }
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter") e.currentTarget.blur()
+                        }}
+                        className="h-7 min-w-0 flex-1 border-transparent bg-transparent shadow-none focus-visible:border-transparent"
+                        aria-label="Project name"
+                    />
+                    <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        aria-label="Undo"
+                        disabled={!canUndo}
+                        onClick={() => useDoc.getState().undo()}
+                    >
+                        <Undo2 />
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        aria-label="Redo"
+                        disabled={!canRedo}
+                        onClick={() => useDoc.getState().redo()}
+                    >
+                        <Redo2 />
+                    </Button>
+                </div>
+                <div className="pointer-events-auto flex items-center justify-between rounded-2xl border border-border bg-background/85 p-1 shadow-lg backdrop-blur-md">
+                    <div className="flex items-center gap-0.5">{zoomGroup}</div>
+                    <div className="flex items-center gap-0.5">{viewGroup}</div>
+                </div>
+            </header>
+        );
+    }
+
     return (
         <header className="pointer-events-none absolute inset-x-0 top-0 z-40 flex items-center justify-between gap-2 p-3">
             <div className="pointer-events-auto flex items-center gap-1.5 rounded-2xl border border-border bg-background/85 p-1.5 shadow-lg backdrop-blur-md">
-                <img
-                    src="/favicon.svg"
-                    width={28}
-                    height={28}
-                    className="pl-1.5 cursor-copy"
-                    onClick={async () => {
-                        try {
-                            await copyLogo();
-                        } catch {
-                            toast.add({
-                                title: "Failed to copy logo",
-                                type: "error",
-                            });
-                        }
-                    }}
-                />
+                {logo}
                 <span className="pr-1.5 text-sm font-semibold tracking-tight select-none">
                     PureCanvas
                 </span>
@@ -145,55 +263,11 @@ export function TopBar() {
                     <Redo2 />
                 </Button>
                 <Separator orientation="vertical" className="h-5" />
-                <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    aria-label="Zoom out"
-                    onClick={() => requestZoom(camera.zoom / 1.2)}
-                >
-                    <ZoomOut />
-                </Button>
-                <span className="w-10 text-center text-xs tabular-nums text-muted-foreground">
-                    {Math.round(camera.zoom * 100)}%
-                </span>
-                <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    aria-label="Zoom in"
-                    onClick={() => requestZoom(camera.zoom * 1.2)}
-                >
-                    <ZoomIn />
-                </Button>
-                <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    aria-label="Fit to view"
-                    onClick={fitView}
-                >
-                    <Fullscreen />
-                </Button>
+                {zoomGroup}
             </div>
 
             <div className="pointer-events-auto flex items-center gap-1.5 rounded-2xl border border-border bg-background/85 p-1.5 shadow-lg backdrop-blur-md">
-                <Button
-                    variant={layersOpen ? "secondary" : "ghost"}
-                    size="icon-sm"
-                    aria-label="Toggle layers"
-                    aria-pressed={layersOpen}
-                    onClick={() => setLayersOpen(!layersOpen)}
-                >
-                    <Layers />
-                </Button>
-                <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    aria-label="Toggle theme"
-                    onClick={toggleTheme}
-                >
-                    {theme === "dark" ? <Sun /> : <Moon />}
-                </Button>
-                <ProjectsDialog />
-                <ExportMenu />
+                {viewGroup}
             </div>
         </header>
     );

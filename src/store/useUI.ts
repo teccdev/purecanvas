@@ -7,6 +7,13 @@ export type ExportPadding = "normal" | "small" | "none";
 export type ExportScope = "all" | "selection";
 export type ExportFormat = "png" | "webp" | "svg";
 
+/**
+ * Treat a viewport as mobile when it is narrow (≤ 768px) or driven by a coarse
+ * pointer (touch), so landscape phones and touch tablets get the mobile UI too.
+ * A comma-separated media query list is an implicit OR.
+ */
+export const MOBILE_MEDIA_QUERY = "(max-width: 768px), (pointer: coarse)";
+
 interface Defaults {
     color: string;
     fill: string;
@@ -52,6 +59,8 @@ interface UIState {
     exportScope: ExportScope;
     exportFormat: ExportFormat;
     zoomRequest: { value: number; nonce: number } | null;
+    isMobile: boolean;
+    propertiesOpen: boolean;
 
     setTheme: (t: Theme) => void;
     toggleTheme: () => void;
@@ -69,6 +78,9 @@ interface UIState {
     setExportScope: (scope: ExportScope) => void;
     setExportFormat: (format: ExportFormat) => void;
     requestZoom: (value: number) => void;
+    setIsMobile: (v: boolean) => void;
+    setPropertiesOpen: (open: boolean) => void;
+    toggleProperties: () => void;
 }
 
 const initialDefaults: Defaults = {
@@ -120,6 +132,17 @@ function storeTheme(theme: Theme): void {
 
 function getInitialTheme(): Theme {
     return readStoredTheme() ?? "dark";
+}
+
+function getInitialIsMobile(): boolean {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+        return false;
+    }
+    try {
+        return window.matchMedia(MOBILE_MEDIA_QUERY).matches;
+    } catch {
+        return false;
+    }
 }
 
 const EXPORT_BACKGROUNDS: ExportBackground[] = [
@@ -188,6 +211,8 @@ export const useUI = create<UIState>((set, get) => ({
     exportScope: initialExport.scope ?? "all",
     exportFormat: initialExport.format ?? "png",
     zoomRequest: null,
+    isMobile: getInitialIsMobile(),
+    propertiesOpen: false,
 
     setTheme: (t) => {
         storeTheme(t);
@@ -253,4 +278,9 @@ export const useUI = create<UIState>((set, get) => ({
         });
     },
     requestZoom: (value) => set({ zoomRequest: { value, nonce: Date.now() } }),
+    setIsMobile: (v) =>
+        set((s) => (s.isMobile === v ? s : { isMobile: v })),
+    setPropertiesOpen: (open) => set({ propertiesOpen: open }),
+    toggleProperties: () =>
+        set((s) => ({ propertiesOpen: !s.propertiesOpen })),
 }));

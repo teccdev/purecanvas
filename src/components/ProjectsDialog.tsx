@@ -25,12 +25,14 @@ import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { db } from "@/lib/db"
 import { useDoc } from "@/store/useDoc"
+import { useUI } from "@/store/useUI"
 import { createAndOpenProject, openProject, removeProject, renameProject } from "@/lib/projects"
 import { cn } from "@/lib/utils"
 
 export function ProjectsDialog() {
   const [open, setOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const isMobile = useUI((s) => s.isMobile)
   const [draft, setDraft] = useState("")
   const activeId = useDoc((s) => s.projectId)
 
@@ -50,10 +52,16 @@ export function ProjectsDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
         render={
-          <Button variant="outline" size="sm">
-            <FolderOpen data-icon="inline-start" />
-            Projects
-          </Button>
+          isMobile ? (
+            <Button variant="outline" size="icon-sm" aria-label="Projects">
+              <FolderOpen />
+            </Button>
+          ) : (
+            <Button variant="outline" size="sm">
+              <FolderOpen data-icon="inline-start" />
+              Projects
+            </Button>
+          )
         }
       />
       <DialogContent className="sm:max-w-lg">

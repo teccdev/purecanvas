@@ -181,8 +181,12 @@ export function Toolbar() {
             key={t.id}
             active={tool === t.id}
             onClick={() => {
-              setTool(t.id)
-              if (t.id === "pen") setPenVariant(penVariant)
+              if (isMobile && tool === t.id) {
+                setTool("select")
+              } else {
+                setTool(t.id)
+                if (t.id === "pen") setPenVariant(penVariant)
+              }
             }}
             label={t.label}
             shortcuts={t.shortcuts}

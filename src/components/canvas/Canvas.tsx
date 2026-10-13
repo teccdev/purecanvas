@@ -96,7 +96,7 @@ type SnapIndicator = {
 const SNAP_THRESHOLD_PX = 6
 
 /** How long (ms) a finger must rest before a drag becomes a box-select. */
-const LONG_PRESS_MS = 2000
+const LONG_PRESS_MS = 1000
 /** How far (screen px) a finger may move before a long-press is cancelled. */
 const TOUCH_MOVE_THRESHOLD = 8
 
@@ -407,7 +407,7 @@ export function Canvas() {
               .map((el) => structuredClone(el))
             interaction.current = { mode: "move", startWorld: world, originals, pushed: false }
           } else if (ui.isMobile && e.pointerType === "touch") {
-            // Empty-space touch: pan by default; hold ~2s to box-select.
+            // Empty-space touch: pan by default; hold ~1s to box-select.
             if (!e.shiftKey) ui.clearSelection()
             interaction.current = {
               mode: "touch-pan",

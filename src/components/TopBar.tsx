@@ -2,7 +2,6 @@ import {
     Layers,
     Fullscreen,
     Moon,
-    PanelRight,
     Redo2,
     Sun,
     Undo2,
@@ -30,8 +29,6 @@ export function TopBar() {
     const setLayersOpen = useUI((s) => s.setLayersOpen);
     const requestZoom = useUI((s) => s.requestZoom);
     const isMobile = useUI((s) => s.isMobile);
-    const propertiesOpen = useUI((s) => s.propertiesOpen);
-    const setPropertiesOpen = useUI((s) => s.setPropertiesOpen);
 
     const copyLogo = async () => {
         // Rasterize the SVG logo to a PNG so it pastes like any image
@@ -165,17 +162,6 @@ export function TopBar() {
             >
                 {theme === "dark" ? <Sun /> : <Moon />}
             </Button>
-            {isMobile && (
-                <Button
-                    variant={propertiesOpen ? "secondary" : "ghost"}
-                    size="icon-sm"
-                    aria-label="Toggle properties"
-                    aria-pressed={propertiesOpen}
-                    onClick={() => setPropertiesOpen(!propertiesOpen)}
-                >
-                    <PanelRight />
-                </Button>
-            )}
             <ProjectsDialog />
             <ExportMenu />
         </>

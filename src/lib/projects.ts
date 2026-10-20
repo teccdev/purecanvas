@@ -3,6 +3,7 @@ import { uid } from "./id";
 import { useDoc } from "@/store/useDoc";
 import { useUI } from "@/store/useUI";
 import type { ProjectRecord } from "./types";
+import { makeArtboard, normalizeArtboard } from "./artboard";
 
 const LAST_KEY = "purecanvas-last-project";
 
@@ -13,6 +14,7 @@ export function makeProject(name = "Untitled"): ProjectRecord {
         name,
         elements: [],
         camera: { x: 0, y: 0, zoom: 1 },
+        artboard: makeArtboard(),
         createdAt: now,
         updatedAt: now,
     };
@@ -32,6 +34,7 @@ export async function openProject(
         projectName: record.name,
         elements: record.elements,
         camera: record.camera,
+        artboard: normalizeArtboard(record.artboard),
     });
     return record;
 }

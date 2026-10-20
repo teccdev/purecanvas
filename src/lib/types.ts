@@ -153,6 +153,30 @@ export interface Camera {
   zoom: number
 }
 
+/**
+ * A user-defined design area (a.k.a. artboard/page). Purely a visual guide:
+ * it never restricts where things can be drawn, but content can snap to it and
+ * it can be used as the crop region when exporting.
+ */
+export type SlideAxis = "horizontal" | "vertical"
+
+export interface Artboard {
+  enabled: boolean
+  /** World coordinate of the top-left corner of the first slide. */
+  x: number
+  y: number
+  width: number
+  height: number
+  /** Canvas fill. `null` keeps the theme's default surface. */
+  background: string | null
+  /** Lay the canvas out as a strip of slides instead of a single frame. */
+  slides: boolean
+  /** Total number of slides in the strip (at least 1). */
+  slideCount: number
+  /** Direction in which extra slides are laid out. */
+  slideAxis: SlideAxis
+}
+
 export type Tool =
   | "select"
   | "text"
@@ -169,6 +193,7 @@ export interface ProjectRecord {
   name: string
   elements: Element[]
   camera: Camera
+  artboard?: Artboard
   createdAt: number
   updatedAt: number
 }

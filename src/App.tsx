@@ -19,6 +19,7 @@ import { bootstrapProject } from "@/lib/projects";
 import { ensureFontLoaded } from "@/lib/fonts";
 import { SponsorDialog } from "@/components/SponsorDialog";
 import { MobileWelcomeDialog } from "@/components/MobileWelcomeDialog";
+import { Presenter } from "@/components/Presenter";
 
 let booted = false;
 
@@ -111,6 +112,7 @@ export default function App() {
                     time="3 months"
                 />
                 {isMobile && <MobileWelcomeDialog />}
+                <Presenter />
                 {!projectId && (
                     <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/70 backdrop-blur-sm">
                         <Loader2 className="size-6 animate-spin text-muted-foreground" />

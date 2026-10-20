@@ -232,6 +232,8 @@ export function useKeyboardShortcuts() {
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (isEditable(event.target)) return
+      // The presenter owns the keyboard while it is open.
+      if (useUI.getState().presenting) return
       const ctx: ShortcutContext = {
         event,
         doc: useDoc.getState(),

@@ -9,7 +9,8 @@
 - 
 
 ## Current
-~ inconsistent svg rendering (addressed: sanitized export. Should test more but no longer critical.)
+- need to add native support for manual image sizes - like canva - and slides
+- fonts aren't loaded immediately - cache used fonts for last project and ensure it stays aligned
 ~ pixabay filters (addressed. Waiting on API access approval.)
 
 ## Later
@@ -17,3 +18,4 @@
 - smooth zoom animations
 - investigate random lag
 - textbox resizing
+- Glint website link

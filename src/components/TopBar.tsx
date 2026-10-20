@@ -2,6 +2,7 @@ import {
     Layers,
     Fullscreen,
     Moon,
+    Play,
     Redo2,
     Sun,
     Undo2,
@@ -16,6 +17,7 @@ import { useUI } from "@/store/useUI";
 import { unionBounds } from "@/lib/geometry";
 import { ProjectsDialog } from "./ProjectsDialog";
 import { ExportMenu } from "./ExportMenu";
+import { ArtboardMenu } from "./ArtboardMenu";
 import { toast } from "@/components/ui/toast";
 
 export function TopBar() {
@@ -29,6 +31,7 @@ export function TopBar() {
     const setLayersOpen = useUI((s) => s.setLayersOpen);
     const requestZoom = useUI((s) => s.requestZoom);
     const isMobile = useUI((s) => s.isMobile);
+    const startPresenting = useUI((s) => s.startPresenting);
 
     const copyLogo = async () => {
         // Rasterize the SVG logo to a PNG so it pastes like any image
@@ -163,6 +166,23 @@ export function TopBar() {
                 {theme === "dark" ? <Sun /> : <Moon />}
             </Button>
             <ProjectsDialog />
+            <ArtboardMenu />
+            <Button
+                variant="default"
+                size={isMobile ? "icon-sm" : "sm"}
+                aria-label="Present"
+                title="Present"
+                onClick={() => startPresenting(0)}
+            >
+                {isMobile ? (
+                    <Play />
+                ) : (
+                    <>
+                        <Play data-icon="inline-start" />
+                        Present
+                    </>
+                )}
+            </Button>
             <ExportMenu />
         </>
     );

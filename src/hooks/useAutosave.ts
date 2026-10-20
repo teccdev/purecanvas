@@ -8,6 +8,7 @@ export function useAutosave() {
   const projectName = useDoc((s) => s.projectName)
   const elements = useDoc((s) => s.elements)
   const camera = useDoc((s) => s.camera)
+  const artboard = useDoc((s) => s.artboard)
 
   useEffect(() => {
     if (!projectId) return
@@ -19,6 +20,7 @@ export function useAutosave() {
           name: projectName,
           elements,
           camera,
+          artboard,
           updatedAt: Date.now(),
         })
       })().catch(() => {
@@ -26,5 +28,5 @@ export function useAutosave() {
       })
     }, 700)
     return () => clearTimeout(timer)
-  }, [projectId, projectName, elements, camera])
+  }, [projectId, projectName, elements, camera, artboard])
 }

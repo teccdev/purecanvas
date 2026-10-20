@@ -19,14 +19,28 @@ export interface BuiltSvg {
   cssHeight: number
 }
 
-function backgroundRect(background: ExportBackground, w: number, h: number, x: number, y: number): string {
-  if (background === "transparent") return ""
-  let fill = "#ffffff"
+/** Resolve an export background (or literal CSS color) to a solid color. */
+export function resolveBackgroundColor(
+  background: ExportBackground | string | null | undefined
+): string {
+  if (!background || background === "transparent") return "#ffffff"
   if (background === "theme") {
-    fill = document.documentElement.classList.contains("dark") ? "#0a0a0a" : "#ffffff"
-  } else if (background === "black") {
-    fill = "#000000"
+    return document.documentElement.classList.contains("dark") ? "#0a0a0a" : "#ffffff"
   }
+  if (background === "white") return "#ffffff"
+  if (background === "black") return "#000000"
+  return background
+}
+
+function backgroundRect(
+  background: ExportBackground | string,
+  w: number,
+  h: number,
+  x: number,
+  y: number
+): string {
+  if (background === "transparent") return ""
+  const fill = resolveBackgroundColor(background)
   return `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${fill}" />`
 }
 
@@ -202,14 +216,21 @@ export function visualBounds(elements: Element[]): Bounds | null {
 
 export async function buildSvg(
   elements: Element[],
-  background: ExportBackground,
-  padding = 48
+  background: ExportBackground | string,
+  padding = 48,
+  frame?: Bounds | null
 ): Promise<BuiltSvg> {
   const b = visualBounds(elements) ?? { x: 0, y: 0, width: 960, height: 640, rotation: 0 }
-  const minX = b.x - padding
-  const minY = b.y - padding
-  const width = Math.max(1, Math.ceil(b.width + padding * 2))
-  const height = Math.max(1, Math.ceil(b.height + padding * 2))
+  // A frame (an artboard/canvas area) crops exactly to that region; otherwise
+  // the design is cropped tight to its own content plus the padding preset.
+  const minX = frame ? frame.x : b.x - padding
+  const minY = frame ? frame.y : b.y - padding
+  const width = frame
+    ? Math.max(1, Math.round(frame.width))
+    : Math.max(1, Math.ceil(b.width + padding * 2))
+  const height = frame
+    ? Math.max(1, Math.round(frame.height))
+    : Math.max(1, Math.ceil(b.height + padding * 2))
 
   const wrapper = document.createElementNS(SVG_NS, "g")
   if (sceneRootEl) wrapper.innerHTML = sceneRootEl.innerHTML
@@ -288,8 +309,10 @@ async function loadImage(src: string): Promise<HTMLImageElement> {
 
 export async function rasterize(
   built: BuiltSvg,
-  mime: "image/png" | "image/webp",
-  scale = 2
+  mime: "image/png" | "image/webp" | "image/jpeg",
+  scale = 2,
+  /** Opaque color painted under the artwork, required for JPEG. */
+  flatten?: string
 ): Promise<Blob> {
   const img = await loadImage(svgToDataUrl(built.svg))
   const canvas = document.createElement("canvas")
@@ -297,14 +320,62 @@ export async function rasterize(
   canvas.height = Math.max(1, Math.round(built.height * scale))
   const ctx = canvas.getContext("2d")
   if (!ctx) throw new Error("Canvas not supported")
+  if (flatten) {
+    ctx.fillStyle = flatten
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+  }
   ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
   return await new Promise<Blob>((resolve, reject) => {
     canvas.toBlob(
       (blob) => (blob ? resolve(blob) : reject(new Error("Export failed"))),
       mime,
-      mime === "image/webp" ? 0.92 : undefined
+      mime === "image/png" ? undefined : 0.92
     )
   })
+}
+
+function blobToDataUrl(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () =>
+      resolve(typeof reader.result === "string" ? reader.result : "")
+    reader.onerror = () => reject(new Error("Failed to read image"))
+    reader.readAsDataURL(blob)
+  })
+}
+
+/**
+ * Build a multi-page PDF, one slide per page. Pages are embedded as JPEGs so
+ * transparency is flattened onto `flatten`.
+ */
+export async function buildPdf(
+  pages: BuiltSvg[],
+  flatten: string
+): Promise<Blob> {
+  if (pages.length === 0) throw new Error("Nothing to export")
+  const { jsPDF } = await import("jspdf")
+  // CSS pixels are 1/96in, while PDF points are 1/72in.
+  const PT_PER_PX = 0.75
+  const first = pages[0]
+  const doc = new jsPDF({
+    unit: "pt",
+    format: [first.width * PT_PER_PX, first.height * PT_PER_PX],
+    orientation: first.width > first.height ? "landscape" : "portrait",
+    compress: true,
+  })
+  for (let i = 0; i < pages.length; i++) {
+    const page = pages[i]
+    const width = page.width * PT_PER_PX
+    const height = page.height * PT_PER_PX
+    if (i > 0) {
+      doc.addPage([width, height], width > height ? "landscape" : "portrait")
+    }
+    // 2× rasterization keeps text and edges crisp when printed or zoomed.
+    const jpeg = await rasterize(page, "image/jpeg", 2, flatten)
+    const data = await blobToDataUrl(jpeg)
+    doc.addImage(data, "JPEG", 0, 0, width, height)
+  }
+  return doc.output("blob")
 }
 
 export function downloadBlob(blob: Blob, filename: string): void {

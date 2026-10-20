@@ -1,5 +1,5 @@
 import { boundsCorners, getBounds, type Point } from "./geometry"
-import type { Element } from "./types"
+import type { Bounds, Element } from "./types"
 
 /** World spacing of the visible dot grid at a given zoom. */
 export function gridSpacing(zoom: number): number {
@@ -56,10 +56,25 @@ function nearestGridPoint(p: Point, spacing: number): Point {
 }
 
 /** Collect snap geometry from the scene, ignoring hidden and excluded elements. */
-export function collectSnapTargets(elements: Element[], excludeIds: Set<string>): SnapTargets {
+export function collectSnapTargets(
+  elements: Element[],
+  excludeIds: Set<string>,
+  frames: Bounds[] = []
+): SnapTargets {
   const points: Point[] = []
   const segments: Array<[Point, Point]> = []
   const lineSegments: Array<[Point, Point]> = []
+
+  // Each canvas/slide frame contributes its corners, edge midpoints, center,
+  // and edges, so content can be aligned to any slide like any other object.
+  for (const frame of frames) {
+    const a = { x: frame.x, y: frame.y }
+    const b = { x: frame.x + frame.width, y: frame.y }
+    const c = { x: frame.x + frame.width, y: frame.y + frame.height }
+    const d = { x: frame.x, y: frame.y + frame.height }
+    points.push(a, b, c, d, mid(a, b), mid(b, c), mid(c, d), mid(d, a), mid(a, c))
+    segments.push([a, b], [b, c], [c, d], [d, a])
+  }
 
   for (const el of elements) {
     if (el.hidden || excludeIds.has(el.id)) continue
@@ -117,8 +132,9 @@ export interface SnapResult {
 
 /**
  * Find the gentlest snap for a set of candidate points against targets and the
- * visible grid. Prefers exact point snaps, then per-axis alignment.
- * `threshold` is in world units.
+ * visible grid. Each axis is resolved independently: a 2D point snap only
+ * fills in an axis that has no alignment of its own, so an already-locked edge
+ * is never nudged loose by a snap on the other axis. `threshold` is in world units.
  */
 export function snapOffset(
   candidates: Point[],
@@ -132,19 +148,24 @@ export function snapOffset(
     y: { dy: number; y: number } | null
   } = { two: null, x: null, y: null }
 
-  const consider = (c: Point, t: Point, allow2d: boolean) => {
+  const consider = (c: Point, t: Point, allow2d: boolean, axes = true) => {
     const dx = t.x - c.x
     const dy = t.y - c.y
     if (allow2d) {
       const dist = Math.hypot(dx, dy)
-      if (dist <= threshold && (!best.two || dist < best.two.dist)) {
+      // Ignore zero-distance hits (e.g. a candidate already lying on a snap
+      // segment) so they can't shadow other, more useful snaps.
+      if (dist <= threshold && dist > EPS && (!best.two || dist < best.two.dist)) {
         best.two = { dx, dy, dist, point: t }
       }
     }
-    if (Math.abs(dx) <= threshold && Math.abs(dx) > EPS) {
+    if (!axes) return
+    // Zero offsets are recorded too: an already-aligned axis must "lock" so a
+    // 2D snap can't nudge it away. An exact alignment always beats a near one.
+    if (Math.abs(dx) <= threshold) {
       if (!best.x || Math.abs(dx) < Math.abs(best.x.dx)) best.x = { dx, x: t.x }
     }
-    if (Math.abs(dy) <= threshold && Math.abs(dy) > EPS) {
+    if (Math.abs(dy) <= threshold) {
       if (!best.y || Math.abs(dy) < Math.abs(best.y.dy)) best.y = { dy, y: t.y }
     }
   }
@@ -154,27 +175,27 @@ export function snapOffset(
     for (const t of targets.points) consider(c, t, true)
     consider(c, grid, true)
     for (const seg of targets.segments) {
-      consider(c, projectToSegment(c, seg[0], seg[1]), true)
+      // Segment snaps are purely 2D ("drop the point onto the segment"): a
+      // projection onto a vertical segment keeps the candidate's own y and must
+      // not masquerade as a y-axis alignment. Edge x/y alignment is already
+      // covered by the segments' endpoints and midpoints as point targets.
+      consider(c, projectToSegment(c, seg[0], seg[1]), true, false)
     }
   }
 
-  if (best.two) {
-    return {
-      dx: best.two.dx,
-      dy: best.two.dy,
-      point: best.two.point,
-      xLine: null,
-      yLine: null,
-    }
+  if (!best.x && !best.y && !best.two) return null
+
+  // Resolve each axis independently. A 2D point snap only fills in an axis that
+  // has no alignment of its own, so locking one edge (e.g. the right edge)
+  // never unlocks another (e.g. once the top edge snaps). Point snaps that
+  // would otherwise override an existing axis lock are ignored.
+  const useTwoX = !best.x && best.two != null
+  const useTwoY = !best.y && best.two != null
+  return {
+    dx: best.x ? best.x.dx : useTwoX ? best.two!.dx : 0,
+    dy: best.y ? best.y.dy : useTwoY ? best.two!.dy : 0,
+    point: useTwoX || useTwoY ? best.two!.point : null,
+    xLine: best.x ? best.x.x : null,
+    yLine: best.y ? best.y.y : null,
   }
-  if (best.x || best.y) {
-    return {
-      dx: best.x ? best.x.dx : 0,
-      dy: best.y ? best.y.dy : 0,
-      point: null,
-      xLine: best.x ? best.x.x : null,
-      yLine: best.y ? best.y.y : null,
-    }
-  }
-  return null
 }

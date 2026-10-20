@@ -4,8 +4,10 @@ import type { GradientFill, PenVariant, Shadow, ShapeKind, Tool } from "@/lib/ty
 export type Theme = "dark" | "light";
 export type ExportBackground = "transparent" | "theme" | "white" | "black";
 export type ExportPadding = "normal" | "small" | "none";
-export type ExportScope = "all" | "selection";
-export type ExportFormat = "png" | "webp" | "svg";
+export type ExportScope = "all" | "artboard" | "selection";
+export type ExportFormat = "png" | "webp" | "jpeg" | "svg" | "pdf";
+/** `all` exports every slide; a number picks one slide by index. */
+export type ExportSlide = "all" | number;
 
 /**
  * Treat a viewport as mobile when it is narrow (≤ 768px) or driven by a coarse
@@ -58,9 +60,12 @@ interface UIState {
     exportPadding: ExportPadding;
     exportScope: ExportScope;
     exportFormat: ExportFormat;
+    exportSlide: ExportSlide;
     zoomRequest: { value: number; nonce: number } | null;
     isMobile: boolean;
     propertiesOpen: boolean;
+    presenting: boolean;
+    presentIndex: number;
 
     setTheme: (t: Theme) => void;
     toggleTheme: () => void;
@@ -77,10 +82,14 @@ interface UIState {
     setExportPadding: (p: ExportPadding) => void;
     setExportScope: (scope: ExportScope) => void;
     setExportFormat: (format: ExportFormat) => void;
+    setExportSlide: (slide: ExportSlide) => void;
     requestZoom: (value: number) => void;
     setIsMobile: (v: boolean) => void;
     setPropertiesOpen: (open: boolean) => void;
     toggleProperties: () => void;
+    startPresenting: (index?: number) => void;
+    stopPresenting: () => void;
+    setPresentIndex: (index: number) => void;
 }
 
 const initialDefaults: Defaults = {
@@ -152,14 +161,15 @@ const EXPORT_BACKGROUNDS: ExportBackground[] = [
     "black",
 ];
 const EXPORT_PADDING_VALUES: ExportPadding[] = ["normal", "small", "none"];
-const EXPORT_SCOPES: ExportScope[] = ["all", "selection"];
-const EXPORT_FORMATS: ExportFormat[] = ["png", "webp", "svg"];
+const EXPORT_SCOPES: ExportScope[] = ["all", "artboard", "selection"];
+const EXPORT_FORMATS: ExportFormat[] = ["png", "webp", "jpeg", "svg", "pdf"];
 
 interface StoredExport {
     background?: ExportBackground;
     padding?: ExportPadding;
     scope?: ExportScope;
     format?: ExportFormat;
+    slide?: ExportSlide;
 }
 
 function readStoredExport(): StoredExport {
@@ -182,6 +192,13 @@ function readStoredExport(): StoredExport {
             format: EXPORT_FORMATS.includes(parsed.format as ExportFormat)
                 ? (parsed.format as ExportFormat)
                 : undefined,
+            slide:
+                parsed.slide === "all" ||
+                (typeof parsed.slide === "number" &&
+                    Number.isInteger(parsed.slide) &&
+                    parsed.slide >= 0)
+                    ? parsed.slide
+                    : undefined,
         };
     } catch {
         return {};
@@ -210,9 +227,12 @@ export const useUI = create<UIState>((set, get) => ({
     exportPadding: initialExport.padding ?? "normal",
     exportScope: initialExport.scope ?? "all",
     exportFormat: initialExport.format ?? "png",
+    exportSlide: initialExport.slide ?? "all",
     zoomRequest: null,
     isMobile: getInitialIsMobile(),
     propertiesOpen: false,
+    presenting: false,
+    presentIndex: 0,
 
     setTheme: (t) => {
         storeTheme(t);
@@ -248,6 +268,7 @@ export const useUI = create<UIState>((set, get) => ({
             padding: get().exportPadding,
             scope: get().exportScope,
             format: get().exportFormat,
+            slide: get().exportSlide,
         });
     },
     setExportPadding: (p) => {
@@ -257,6 +278,7 @@ export const useUI = create<UIState>((set, get) => ({
             padding: p,
             scope: get().exportScope,
             format: get().exportFormat,
+            slide: get().exportSlide,
         });
     },
     setExportScope: (scope) => {
@@ -266,6 +288,7 @@ export const useUI = create<UIState>((set, get) => ({
             padding: get().exportPadding,
             scope,
             format: get().exportFormat,
+            slide: get().exportSlide,
         });
     },
     setExportFormat: (format) => {
@@ -275,6 +298,17 @@ export const useUI = create<UIState>((set, get) => ({
             padding: get().exportPadding,
             scope: get().exportScope,
             format,
+            slide: get().exportSlide,
+        });
+    },
+    setExportSlide: (slide) => {
+        set({ exportSlide: slide });
+        storeExport({
+            background: get().exportBackground,
+            padding: get().exportPadding,
+            scope: get().exportScope,
+            format: get().exportFormat,
+            slide,
         });
     },
     requestZoom: (value) => set({ zoomRequest: { value, nonce: Date.now() } }),
@@ -283,4 +317,8 @@ export const useUI = create<UIState>((set, get) => ({
     setPropertiesOpen: (open) => set({ propertiesOpen: open }),
     toggleProperties: () =>
         set((s) => ({ propertiesOpen: !s.propertiesOpen })),
+    startPresenting: (index = 0) =>
+        set({ presenting: true, presentIndex: Math.max(0, index) }),
+    stopPresenting: () => set({ presenting: false }),
+    setPresentIndex: (index) => set({ presentIndex: Math.max(0, index) }),
 }));

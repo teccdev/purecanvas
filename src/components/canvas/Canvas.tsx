@@ -48,10 +48,12 @@ import {
   snapOffset,
   type SnapResult,
 } from "@/lib/snapping"
+import { MAX_SLIDES, slideFrames } from "@/lib/artboard"
 import { createImageElement } from "@/lib/assets"
 import { fetchImageBlob, readDragPayload } from "@/lib/pixabay"
 import { ElementView } from "./ElementView"
 import { SelectionOverlay } from "./SelectionOverlay"
+import { SlideChip } from "./SlideChip"
 import { DotGridBackground } from "./DotGridBackground"
 import { TextEditor } from "./TextEditor"
 import { registerSceneRoot } from "@/lib/exporter"
@@ -111,6 +113,7 @@ export function Canvas() {
 
   const elements = useDoc((s) => s.elements)
   const camera = useDoc((s) => s.camera)
+  const artboard = useDoc((s) => s.artboard)
   const tool = useUI((s) => s.tool)
   const selectedIds = useUI((s) => s.selectedIds)
   const editingTextId = useUI((s) => s.editingTextId)
@@ -120,6 +123,8 @@ export function Canvas() {
   const [marquee, setMarquee] = useState<{ start: Point; end: Point } | null>(null)
   const [spaceDown, setSpaceDown] = useState(false)
   const [snapIndicator, setSnapIndicator] = useState<SnapIndicator | null>(null)
+  // Which slide's corner chip is expanded (hover on desktop, tap on touch).
+  const [openChip, setOpenChip] = useState<number | null>(null)
 
   const getScreen = useCallback((e: { clientX: number; clientY: number }): Point => {
     const rect = svgRef.current?.getBoundingClientRect()
@@ -142,10 +147,14 @@ export function Canvas() {
   const getSnap = useCallback(
     (candidates: Point[], excludeIds: string[], disabled: boolean): SnapResult | null => {
       if (disabled) return null
-      const { elements: els, camera } = useDoc.getState()
+      const { elements: els, camera, artboard } = useDoc.getState()
       const spacing = gridSpacing(camera.zoom)
       const threshold = SNAP_THRESHOLD_PX / camera.zoom
-      const targets = collectSnapTargets(els, new Set(excludeIds))
+      const targets = collectSnapTargets(
+        els,
+        new Set(excludeIds),
+        artboard.enabled ? slideFrames(artboard) : []
+      )
       return snapOffset(candidates, targets, spacing, threshold)
     },
     []
@@ -840,6 +849,20 @@ export function Canvas() {
     }
   }, [marquee, camera])
 
+  // Screen-space rects for the canvas/slide borders and labels so their
+  // outlines keep a constant weight at any zoom (and always sit above content).
+  const artboardFramesScreen = useMemo(() => {
+    if (!artboard.enabled) return null
+    return slideFrames(artboard).map((frame) => {
+      const tl = worldToScreen({ x: frame.x, y: frame.y }, camera)
+      const br = worldToScreen(
+        { x: frame.x + frame.width, y: frame.y + frame.height },
+        camera
+      )
+      return { x: tl.x, y: tl.y, width: br.x - tl.x, height: br.y - tl.y }
+    })
+  }, [artboard, camera])
+
   const snapScreen = useMemo(() => {
     if (!snapIndicator) return null
     return {
@@ -881,6 +904,19 @@ export function Canvas() {
         onDoubleClick={onDoubleClick}
       >
         <g transform={`translate(${camera.x} ${camera.y}) scale(${camera.zoom})`}>
+          {artboard.enabled &&
+            slideFrames(artboard).map((frame, i) => (
+              <rect
+                key={i}
+                x={frame.x}
+                y={frame.y}
+                width={frame.width}
+                height={frame.height}
+                fill={artboard.background ?? "var(--foreground)"}
+                fillOpacity={artboard.background ? 1 : 0.04}
+                pointerEvents="none"
+              />
+            ))}
           <g ref={setSceneRoot}>
             {elements.map((el) => (
               <ElementView key={el.id} el={el} editing={el.id === editingTextId} />
@@ -888,6 +924,34 @@ export function Canvas() {
             {draft && <ElementView el={draft} />}
           </g>
         </g>
+        {artboardFramesScreen && (
+          <g pointerEvents="none">
+            {artboardFramesScreen.map((frame, i) => (
+              <g key={i}>
+                <rect
+                  x={frame.x}
+                  y={frame.y}
+                  width={frame.width}
+                  height={frame.height}
+                  fill="none"
+                  stroke="var(--primary)"
+                  strokeWidth={1.5}
+                />
+                {artboardFramesScreen.length === 1 && (
+                  <text
+                    x={frame.x}
+                    y={frame.y - 7}
+                    fill="var(--muted-foreground)"
+                    fontSize={11}
+                    fontWeight={500}
+                  >
+                    {`${artboard.width} × ${artboard.height}`}
+                  </text>
+                )}
+              </g>
+            ))}
+          </g>
+        )}
         <SelectionOverlay />
         {snapScreen && (
           <g pointerEvents="none">
@@ -941,6 +1005,38 @@ export function Canvas() {
           />
         )}
       </svg>
+      {artboard.enabled && artboard.slides && artboardFramesScreen && artboardFramesScreen.length > 1 && (
+        <div className="pointer-events-none absolute inset-0 z-20">
+          {artboardFramesScreen.map((frame, i) => (
+            <SlideChip
+              key={i}
+              x={frame.x}
+              y={frame.y}
+              index={i}
+              total={artboardFramesScreen.length}
+              open={openChip === i}
+              canDuplicate={artboardFramesScreen.length < MAX_SLIDES}
+              canDelete={artboardFramesScreen.length > 1}
+              canAdd={artboardFramesScreen.length < MAX_SLIDES}
+              onToggle={() => setOpenChip((cur) => (cur === i ? null : i))}
+              onOpen={() => setOpenChip(i)}
+              onClose={() => setOpenChip((cur) => (cur === i ? null : cur))}
+              onAdd={() => {
+                useDoc.getState().insertSlideAfter(i)
+                setOpenChip(null)
+              }}
+              onDuplicate={() => {
+                useDoc.getState().duplicateSlide(i)
+                setOpenChip(null)
+              }}
+              onDelete={() => {
+                useDoc.getState().deleteSlide(i)
+                setOpenChip(null)
+              }}
+            />
+          ))}
+        </div>
+      )}
       <TextEditor />
       <input
         ref={fileInputRef}

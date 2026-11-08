@@ -29,6 +29,7 @@ export default function App() {
     const isMobile = useUI((s) => s.isMobile);
     const propertiesOpen = useUI((s) => s.propertiesOpen);
     const toggleProperties = useUI((s) => s.toggleProperties);
+    const artboardEnabled = useDoc((s) => s.artboard.enabled);
     const projectId = useDoc((s) => s.projectId);
 
     const [sponsorDialogOpen, setSponsorDialogOpen] = useState(false);
@@ -42,6 +43,12 @@ export default function App() {
         root.classList.toggle("dark", theme === "dark");
         root.style.colorScheme = theme;
     }, [theme]);
+    // The freeform (infinite) canvas shows the grid; Canvas mode hides it,
+    // unless the user has taken manual control of the grid toggle.
+    useEffect(() => {
+        useUI.getState().syncGridToArtboard(artboardEnabled);
+    }, [artboardEnabled]);
+
 
     useEffect(() => {
         if (booted) return;

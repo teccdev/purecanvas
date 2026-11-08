@@ -97,6 +97,9 @@ type SnapIndicator = {
 /** Snap threshold in screen pixels, converted to world units per zoom. */
 const SNAP_THRESHOLD_PX = 6
 
+/** Tools that snap on pointer-down; they also preview snap guides on hover. */
+const HOVER_SNAP_TOOLS = new Set(["shape", "line", "text", "icon"])
+
 /** How long (ms) a finger must rest before a drag becomes a box-select. */
 const LONG_PRESS_MS = 1000
 /** How far (screen px) a finger may move before a long-press is cancelled. */
@@ -118,6 +121,7 @@ export function Canvas() {
   const selectedIds = useUI((s) => s.selectedIds)
   const editingTextId = useUI((s) => s.editingTextId)
   const zoomRequest = useUI((s) => s.zoomRequest)
+  const gridEnabled = useUI((s) => s.gridEnabled)
 
   const [draft, setDraft] = useState<Element | null>(null)
   const [marquee, setMarquee] = useState<{ start: Point; end: Point } | null>(null)
@@ -148,7 +152,7 @@ export function Canvas() {
     (candidates: Point[], excludeIds: string[], disabled: boolean): SnapResult | null => {
       if (disabled) return null
       const { elements: els, camera, artboard } = useDoc.getState()
-      const spacing = gridSpacing(camera.zoom)
+      const spacing = useUI.getState().gridEnabled ? gridSpacing(camera.zoom) : null
       const threshold = SNAP_THRESHOLD_PX / camera.zoom
       const targets = collectSnapTargets(
         els,
@@ -198,6 +202,11 @@ export function Canvas() {
       document.removeEventListener("visibilitychange", reset)
     }
   }, [])
+
+  // Don't leave a hover guide behind when switching tools.
+  useEffect(() => {
+    setSnapIndicator(null)
+  }, [tool])
 
   // Wheel: zoom toward the cursor by default (ctrl/⌘ pinch included); Shift pans.
   useEffect(() => {
@@ -549,7 +558,21 @@ export function Canvas() {
         touchPoints.current.set(e.pointerId, getScreen(e))
       }
       const ia = interaction.current
-      if (!ia) return
+      if (!ia) {
+        // Preview snapping (guide lines + snap dot) while hovering with a
+        // drawing tool, so the first click lands where the guides point.
+        if (
+          e.pointerType !== "touch" &&
+          HOVER_SNAP_TOOLS.has(useUI.getState().tool)
+        ) {
+          const world = getWorld(e)
+          const snap = getSnap([world], [], e.altKey)
+          setSnapIndicator(toIndicator(snap))
+        } else {
+          setSnapIndicator(null)
+        }
+        return
+      }
       const world = getWorld(e)
 
       switch (ia.mode) {
@@ -892,7 +915,9 @@ export function Canvas() {
       onDrop={onDrop}
       onDragOver={(e) => e.preventDefault()}
     >
-      <DotGridBackground camX={camera.x} camY={camera.y} zoom={camera.zoom} />
+      {gridEnabled && (
+        <DotGridBackground camX={camera.x} camY={camera.y} zoom={camera.zoom} />
+      )}
       <svg
         ref={svgRef}
         className="absolute inset-0 size-full touch-none"
@@ -901,6 +926,9 @@ export function Canvas() {
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
+        onPointerLeave={() => {
+          if (!interaction.current) setSnapIndicator(null)
+        }}
         onDoubleClick={onDoubleClick}
       >
         <g transform={`translate(${camera.x} ${camera.y}) scale(${camera.zoom})`}>

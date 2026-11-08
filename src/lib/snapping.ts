@@ -139,7 +139,7 @@ export interface SnapResult {
 export function snapOffset(
   candidates: Point[],
   targets: SnapTargets,
-  spacing: number,
+  spacing: number | null,
   threshold: number
 ): SnapResult | null {
   const best: {
@@ -171,9 +171,11 @@ export function snapOffset(
   }
 
   for (const c of candidates) {
-    const grid = nearestGridPoint(c, spacing)
     for (const t of targets.points) consider(c, t, true)
-    consider(c, grid, true)
+    if (spacing != null) {
+      const grid = nearestGridPoint(c, spacing)
+      consider(c, grid, true)
+    }
     for (const seg of targets.segments) {
       // Segment snaps are purely 2D ("drop the point onto the segment"): a
       // projection onto a vertical segment keeps the candidate's own y and must

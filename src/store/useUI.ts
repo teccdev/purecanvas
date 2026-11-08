@@ -66,6 +66,13 @@ interface UIState {
     propertiesOpen: boolean;
     presenting: boolean;
     presentIndex: number;
+    /** Show the dot grid and snap to it. */
+    gridEnabled: boolean;
+    /**
+     * Set once the user toggles the grid manually. After that, entering or
+     * leaving Canvas mode no longer changes the grid automatically.
+     */
+    gridUserOverride: boolean;
 
     setTheme: (t: Theme) => void;
     toggleTheme: () => void;
@@ -90,6 +97,9 @@ interface UIState {
     startPresenting: (index?: number) => void;
     stopPresenting: () => void;
     setPresentIndex: (index: number) => void;
+    setGridEnabled: (enabled: boolean) => void;
+    /** Follow Canvas mode unless the user has taken manual control of the grid. */
+    syncGridToArtboard: (artboardEnabled: boolean) => void;
 }
 
 const initialDefaults: Defaults = {
@@ -233,6 +243,8 @@ export const useUI = create<UIState>((set, get) => ({
     propertiesOpen: false,
     presenting: false,
     presentIndex: 0,
+    gridEnabled: true,
+    gridUserOverride: false,
 
     setTheme: (t) => {
         storeTheme(t);
@@ -321,4 +333,12 @@ export const useUI = create<UIState>((set, get) => ({
         set({ presenting: true, presentIndex: Math.max(0, index) }),
     stopPresenting: () => set({ presenting: false }),
     setPresentIndex: (index) => set({ presentIndex: Math.max(0, index) }),
+    setGridEnabled: (enabled) =>
+        set({ gridEnabled: enabled, gridUserOverride: true }),
+    syncGridToArtboard: (artboardEnabled) =>
+        set((s) =>
+            s.gridUserOverride
+                ? s
+                : { gridEnabled: !artboardEnabled }
+        ),
 }));

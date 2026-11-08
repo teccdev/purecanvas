@@ -1,4 +1,5 @@
 import {
+    Grid3x3,
     Layers,
     Fullscreen,
     Moon,
@@ -32,6 +33,8 @@ export function TopBar() {
     const requestZoom = useUI((s) => s.requestZoom);
     const isMobile = useUI((s) => s.isMobile);
     const startPresenting = useUI((s) => s.startPresenting);
+    const gridEnabled = useUI((s) => s.gridEnabled);
+    const setGridEnabled = useUI((s) => s.setGridEnabled);
 
     const copyLogo = async () => {
         // Rasterize the SVG logo to a PNG so it pastes like any image
@@ -148,6 +151,16 @@ export function TopBar() {
 
     const viewGroup = (
         <>
+            <Button
+                variant={gridEnabled ? "secondary" : "ghost"}
+                size="icon-sm"
+                aria-label={gridEnabled ? "Hide grid" : "Show grid"}
+                aria-pressed={gridEnabled}
+                title={gridEnabled ? "Hide grid and grid snap" : "Show grid and grid snap"}
+                onClick={() => setGridEnabled(!gridEnabled)}
+            >
+                <Grid3x3 />
+            </Button>
             <Button
                 variant={layersOpen ? "secondary" : "ghost"}
                 size="icon-sm"

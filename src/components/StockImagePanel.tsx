@@ -133,6 +133,7 @@ export function StockImagePanel() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search free images…"
+            aria-label="Search free images"
             className="h-8 w-full rounded-md border border-input bg-background pr-2 pl-8 text-xs outline-none placeholder:text-muted-foreground focus:border-ring"
           />
         </div>

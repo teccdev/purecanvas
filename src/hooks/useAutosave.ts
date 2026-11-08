@@ -1,6 +1,6 @@
 import { useEffect } from "react"
 import { useDoc } from "@/store/useDoc"
-import { db } from "@/lib/db"
+import { saveProjectSnapshot } from "@/lib/db"
 
 /** Debounced autosave of the active project into Dexie. */
 export function useAutosave() {
@@ -13,17 +13,12 @@ export function useAutosave() {
   useEffect(() => {
     if (!projectId) return
     const timer = setTimeout(() => {
-      void (async () => {
-        const existing = await db.projects.get(projectId)
-        if (!existing) return
-        await db.projects.update(projectId, {
-          name: projectName,
-          elements,
-          camera,
-          artboard,
-          updatedAt: Date.now(),
-        })
-      })().catch(() => {
+      void saveProjectSnapshot(projectId, {
+        name: projectName,
+        elements,
+        camera,
+        artboard,
+      }).catch(() => {
         /* ignore transient persistence errors */
       })
     }, 700)

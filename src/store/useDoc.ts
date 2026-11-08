@@ -431,12 +431,17 @@ export const useDoc = create<DocState>((set, get) => ({
   },
 
   moveLayer: (id, toIndex) => {
-    get().pushHistory()
+    const { elements, pushHistory } = get()
+    const from = elements.findIndex((e) => e.id === id)
+    if (from === -1) return
+    const target = Math.max(0, Math.min(elements.length - 1, toIndex))
+    if (target === from) return
+    pushHistory()
     set((s) => {
-      const from = s.elements.findIndex((e) => e.id === id)
-      if (from === -1) return s
+      const index = s.elements.findIndex((e) => e.id === id)
+      if (index === -1) return s
       const next = [...s.elements]
-      const [moved] = next.splice(from, 1)
+      const [moved] = next.splice(index, 1)
       next.splice(Math.max(0, Math.min(next.length, toIndex)), 0, moved)
       return { elements: next }
     })

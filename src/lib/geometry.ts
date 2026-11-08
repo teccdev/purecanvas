@@ -107,6 +107,33 @@ export function rectsIntersect(a: Bounds, b: Bounds): boolean {
   )
 }
 
+/** Separating-axis test for two convex polygons (e.g. rotated rectangle corners). */
+export function polygonsIntersect(a: Point[], b: Point[]): boolean {
+  for (const poly of [a, b]) {
+    for (let i = 0; i < poly.length; i++) {
+      const p1 = poly[i]
+      const p2 = poly[(i + 1) % poly.length]
+      const axis = { x: -(p2.y - p1.y), y: p2.x - p1.x }
+      let minA = Infinity
+      let maxA = -Infinity
+      let minB = Infinity
+      let maxB = -Infinity
+      for (const p of a) {
+        const d = p.x * axis.x + p.y * axis.y
+        minA = Math.min(minA, d)
+        maxA = Math.max(maxA, d)
+      }
+      for (const p of b) {
+        const d = p.x * axis.x + p.y * axis.y
+        minB = Math.min(minB, d)
+        maxB = Math.max(maxB, d)
+      }
+      if (maxA < minB || maxB < minA) return false
+    }
+  }
+  return true
+}
+
 export function pointInBounds(p: Point, b: Bounds): boolean {
   return p.x >= b.x && p.x <= b.x + b.width && p.y >= b.y && p.y <= b.y + b.height
 }

@@ -3,6 +3,7 @@ import path from 'node:path'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig, loadEnv, type Plugin } from 'vite'
+import { analyticsDevPlugin } from './server/analytics/dev-plugin'
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
@@ -10,6 +11,23 @@ export default defineConfig(({ mode }) => {
   // populate process.env from .env inside the config file by default, so we
   // read it directly as a fallback in case loadEnv misses it.
   const env = loadEnv(mode, process.cwd(), '')
+
+  // The analytics handlers run inside the Vite dev/preview server process and
+  // read these from process.env, exactly like the deployed Vercel functions.
+  // Never expose them to the client bundle.
+  const analyticsServerKeys = [
+    'ANALYTICS_PASSWORD',
+    'ANALYTICS_SESSION_SECRET',
+    'ANALYTICS_ENV',
+    'UPSTASH_REDIS_REST_URL',
+    'UPSTASH_REDIS_REST_TOKEN',
+    'KV_REST_API_URL',
+    'KV_REST_API_TOKEN',
+  ]
+  for (const key of analyticsServerKeys) {
+    if (!process.env[key] && env[key]) process.env[key] = env[key]
+  }
+
   let pixabayKey = env.PIXABAY_KEY
   if (!pixabayKey) {
     try {
@@ -61,6 +79,12 @@ export default defineConfig(({ mode }) => {
           const url = new URL(req.url ?? '/', 'http://localhost')
           const params = new URLSearchParams(url.search)
           if (!params.has('key')) {
+            if (!pixabayKey) {
+              res.statusCode = 500
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({ error: 'PIXABAY_KEY is not configured' }))
+              return
+            }
             params.set('key', pixabayKey)
           }
           // Map the internal "type" param to Pixabay's "image_type" — mirrors
@@ -95,10 +119,12 @@ export default defineConfig(({ mode }) => {
   }
 
   return {
-    plugins: [react(), tailwindcss(), pixabayProxy()],
+    plugins: [react(), tailwindcss(), pixabayProxy(), analyticsDevPlugin()],
     server: {
       // Allow Cloudflare quick tunnels (trycloudflare) to reach the dev server.
       allowedHosts: ['localhost', '.trycloudflare.com', '.cloudflareaccess.com'],
+      // Local analytics writes here; don't let the watcher react to it.
+      watch: { ignored: ['**/.data/**'] },
     },
     resolve: {
       alias: {

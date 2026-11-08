@@ -96,6 +96,7 @@ function ColorField({
                 <Input
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
+                    aria-label={label}
                     className="h-7 w-20 font-mono text-xs"
                 />
                 <label className="relative size-7 shrink-0 cursor-pointer overflow-hidden rounded-md border border-input">
@@ -105,6 +106,7 @@ function ColorField({
                     />
                     <input
                         type="color"
+                        aria-label={`${label} color`}
                         value={
                             /^#[0-9a-f]{6}$/i.test(value) ? value : "#000000"
                         }
@@ -191,6 +193,7 @@ function SliderField({
                 min={min}
                 max={max}
                 step={step}
+                ariaLabel={label}
                 onValueChange={(v) => {
                     const next = Array.isArray(v) ? v[0] : v;
                     if (typeof next === "number") onChange(next);

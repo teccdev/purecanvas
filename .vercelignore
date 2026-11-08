@@ -1,0 +1,6 @@
+# Never upload local secrets or development analytics to a deployment.
+.env*
+.data/
+.playwright-mcp/
+.agents/
+brag-output/

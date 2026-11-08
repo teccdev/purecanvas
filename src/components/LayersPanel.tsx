@@ -103,7 +103,10 @@ function LayerRow({
         size="icon-xs"
         aria-label={el.hidden ? "Show layer" : "Hide layer"}
         className={cn(!el.hidden && "opacity-0 group-hover:opacity-100")}
-        onClick={() => useDoc.getState().updateElement(el.id, { hidden: !el.hidden })}
+        onClick={() => {
+          useDoc.getState().pushHistory()
+          useDoc.getState().updateElement(el.id, { hidden: !el.hidden })
+        }}
       >
         {el.hidden ? <EyeOff /> : <Eye />}
       </Button>
@@ -112,7 +115,10 @@ function LayerRow({
         size="icon-xs"
         aria-label={el.locked ? "Unlock layer" : "Lock layer"}
         className={cn(!el.locked && "opacity-0 group-hover:opacity-100")}
-        onClick={() => useDoc.getState().updateElement(el.id, { locked: !el.locked })}
+        onClick={() => {
+          useDoc.getState().pushHistory()
+          useDoc.getState().updateElement(el.id, { locked: !el.locked })
+        }}
       >
         {el.locked ? <Lock /> : <LockOpen />}
       </Button>

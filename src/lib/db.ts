@@ -16,6 +16,16 @@ export class PureCanvasDB extends Dexie {
 
 export const db = new PureCanvasDB();
 
+/** Persist the editable fields of an existing project; no-op if it was deleted. */
+export async function saveProjectSnapshot(
+    id: string,
+    snapshot: Pick<ProjectRecord, "name" | "elements" | "camera" | "artboard">,
+): Promise<void> {
+    const existing = await db.projects.get(id);
+    if (!existing) return;
+    await db.projects.update(id, { ...snapshot, updatedAt: Date.now() });
+}
+
 export async function createProject(
     name: string,
     project: ProjectRecord,

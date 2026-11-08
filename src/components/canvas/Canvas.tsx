@@ -25,6 +25,7 @@ import {
   elementCenter,
   getBounds,
   pointInElement,
+  polygonsIntersect,
   rotatePoint,
   screenToWorld,
   simplifyPoints,
@@ -474,7 +475,6 @@ export function Canvas() {
         case "pen": {
           if (ui.penVariant === "eraser") {
             interaction.current = { mode: "erase" }
-            useDoc.getState().pushHistory()
             eraseAt(world)
           } else {
             interaction.current = { mode: "draw-pen", points: [{ x: world.x, y: world.y }] }
@@ -796,13 +796,7 @@ export function Canvas() {
             els
               .filter((el) => {
                 if (el.hidden || el.locked) return false
-                const eb = getBounds(el)
-                return (
-                  eb.x < b.x + b.width &&
-                  eb.x + eb.width > b.x &&
-                  eb.y < b.y + b.height &&
-                  eb.y + eb.height > b.y
-                )
+                return polygonsIntersect(boundsCorners(getBounds(el)), boundsCorners(b))
               })
               .map((el) => el.id),
           )

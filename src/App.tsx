@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
-import { Analytics } from "@vercel/analytics/react";
 import { Canvas } from "@/components/canvas/Canvas";
-import { CodeXml, DollarSign, Lightbulb, Loader2, SlidersHorizontal } from "lucide-react";
-import { FloatingButton } from "@/components/FloatingButton";
+import { Loader2, SlidersHorizontal } from "lucide-react";
+import { SiteFooter } from "@/components/SiteFooter";
 import { Toolbar } from "@/components/Toolbar";
 import { TopBar } from "@/components/TopBar";
 import { PropertiesPanel } from "@/components/PropertiesPanel";
@@ -17,7 +16,6 @@ import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { useMobileViewport } from "@/hooks/useMobileViewport";
 import { bootstrapProject } from "@/lib/projects";
 import { ensureFontLoaded } from "@/lib/fonts";
-import { SponsorDialog } from "@/components/SponsorDialog";
 import { MobileWelcomeDialog } from "@/components/MobileWelcomeDialog";
 import { Presenter } from "@/components/Presenter";
 
@@ -29,10 +27,10 @@ export default function App() {
     const isMobile = useUI((s) => s.isMobile);
     const propertiesOpen = useUI((s) => s.propertiesOpen);
     const toggleProperties = useUI((s) => s.toggleProperties);
-    const artboardEnabled = useDoc((s) => s.artboard.enabled);
     const projectId = useDoc((s) => s.projectId);
+    const artboardEnabled = useDoc((s) => s.artboard.enabled);
 
-    const [sponsorDialogOpen, setSponsorDialogOpen] = useState(false);
+    const [bootError, setBootError] = useState<string | null>(null);
 
     useAutosave();
     useKeyboardShortcuts();
@@ -43,18 +41,23 @@ export default function App() {
         root.classList.toggle("dark", theme === "dark");
         root.style.colorScheme = theme;
     }, [theme]);
+
     // The freeform (infinite) canvas shows the grid; Canvas mode hides it,
     // unless the user has taken manual control of the grid toggle.
     useEffect(() => {
         useUI.getState().syncGridToArtboard(artboardEnabled);
     }, [artboardEnabled]);
 
-
     useEffect(() => {
         if (booted) return;
         booted = true;
         ensureFontLoaded("Inter");
-        void bootstrapProject();
+        void bootstrapProject().catch((err: unknown) => {
+            console.error("Failed to open workspace", err);
+            setBootError(
+                err instanceof Error ? err.message : "Unknown storage error",
+            );
+        });
     }, []);
 
     return (
@@ -86,48 +89,34 @@ export default function App() {
                     </button>
                 )}
 
-                {!isMobile && (
-                    <>
-                        <FloatingButton
-                            onClick={() => setSponsorDialogOpen(true)}
-                            icon={<DollarSign className="size-4.5 shrink-0" />}
-                            label="Your ad here! - $20"
-                            emphasize
-                        />
-                        <FloatingButton
-                            href="mailto:teccin+purecanvas@proton.me?subject=PureCanvas%20Feature%20Request"
-                            icon={<Lightbulb className="size-4.5 shrink-0" />}
-                            label="Feature request"
-                        />
-                        <FloatingButton
-                            href="https://github.com/teccdev/purecanvas"
-                            icon={<CodeXml className="size-4.5 shrink-0" />}
-                            label="View on GitHub"
-                        />
-                        {/*<FloatingButton
-                            href="https://buymeacoffee.com/glintsoftware"
-                            icon={<Coffee className="size-4 shrink-0" />}
-                            label="Buy me a coffee"
-                        />*/}
-                    </>
-                )}
-
-                <SponsorDialog
-                    open={sponsorDialogOpen}
-                    onOpenChange={setSponsorDialogOpen}
-                    priceUSD={20}
-                    time="3 months"
-                />
+                {!isMobile && <SiteFooter />}
                 {isMobile && <MobileWelcomeDialog />}
                 <Presenter />
                 {!projectId && (
-                    <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/70 backdrop-blur-sm">
-                        <Loader2 className="size-6 animate-spin text-muted-foreground" />
+                    <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/70 p-6 backdrop-blur-sm">
+                        {bootError ? (
+                            <div className="w-full max-w-sm rounded-xl border border-border bg-background p-5 text-center shadow-lg">
+                                <p className="text-sm font-semibold">
+                                    Couldn’t open your workspace
+                                </p>
+                                <p className="mt-1 text-xs text-muted-foreground">
+                                    {bootError}
+                                </p>
+                                <button
+                                    type="button"
+                                    onClick={() => window.location.reload()}
+                                    className="mt-4 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground"
+                                >
+                                    Reload
+                                </button>
+                            </div>
+                        ) : (
+                            <Loader2 className="size-6 animate-spin text-muted-foreground" />
+                        )}
                     </div>
                 )}
             </div>
             <Toaster />
-            <Analytics />
         </TooltipProvider>
     );
 }

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import {
   Check,
   ClipboardCopy,
@@ -129,7 +129,10 @@ function ExportPreview() {
   // The canvas scope falls back to the whole design when no canvas is set.
   const scope = activeScope(exportScope, artboard)
   const multi = isMultiSlide(artboard, scope, exportSlide)
-  const frames = scope === "artboard" ? framesForExport(artboard, exportSlide) : null
+  const frames = useMemo(
+    () => (scope === "artboard" ? framesForExport(artboard, exportSlide) : null),
+    [scope, artboard, exportSlide]
+  )
   const frame = frames ? frames[0] : undefined
   const paint =
     scope === "artboard" ? canvasPaint(artboard, exportBackground) : exportBackground
@@ -382,13 +385,13 @@ export function ExportMenu() {
         const ext = format === "jpeg" ? "jpg" : format
         const flatten = format === "jpeg" ? resolveBackgroundColor(paint) : undefined
         if (pages.length === 1) {
-          const blob = await rasterize(pages[0], mime, 1, flatten)
+          const blob = await rasterize(pages[0], mime, 2, flatten)
           downloadBlob(blob, `${name}.${ext}`)
           return `${format.toUpperCase()} downloaded`
         }
         const files: Record<string, Uint8Array> = {}
         for (let i = 0; i < pages.length; i++) {
-          const blob = await rasterize(pages[i], mime, 1, flatten)
+          const blob = await rasterize(pages[i], mime, 2, flatten)
           files[`${name}-${String(i + 1).padStart(2, "0")}.${ext}`] = new Uint8Array(
             await blob.arrayBuffer()
           )

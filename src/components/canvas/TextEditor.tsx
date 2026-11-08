@@ -82,7 +82,8 @@ export function TextEditor() {
         textAlign: el.align,
         whiteSpace: "pre-wrap",
         transform: el.rotation ? `rotate(${el.rotation}deg)` : undefined,
-        transformOrigin: "top left",
+        // Match the SVG, which rotates text about the element's center.
+        transformOrigin: `${(el.width * camera.zoom) / 2}px ${(el.height * camera.zoom) / 2}px`,
       }}
     />
   )

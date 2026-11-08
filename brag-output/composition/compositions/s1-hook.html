@@ -1,0 +1,122 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Geist";
+      src: url("assets/fonts/geist-latin-wght-normal.woff2") format("woff2");
+      font-weight: 100 900;
+      font-style: normal;
+      font-display: block;
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: #0a0a0a;
+      color: #ededed;
+      font-family: "Geist", system-ui, sans-serif;
+    }
+    #s1-grid {
+      position: absolute;
+      inset: -80px;
+      background-image: radial-gradient(circle, rgba(255, 255, 255, 0.13) 1.2px, transparent 1.35px);
+      background-size: 24px 24px;
+      background-position: 12px 12px;
+    }
+    #s1-vignette {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(
+        ellipse 74% 70% at 50% 46%,
+        rgba(10, 10, 10, 0) 34%,
+        rgba(10, 10, 10, 0.88) 100%
+      );
+    }
+    #s1-shape {
+      position: absolute;
+      left: 660px;
+      top: 298px;
+      width: 600px;
+      height: 332px;
+    }
+    #s1-shape-in {
+      position: absolute;
+      inset: 0;
+      border-radius: 40px;
+      background: #8b8bf7;
+    }
+    #s1-cursor {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 34px;
+      height: 34px;
+    }
+    #s1-cursor svg {
+      display: block;
+      width: 34px;
+      height: 34px;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.55));
+    }
+    #s1-head {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 706px;
+      text-align: center;
+      font-size: 132px;
+      line-height: 1;
+      font-weight: 700;
+      letter-spacing: -0.045em;
+      white-space: nowrap;
+    }
+    #s1-head .w {
+      display: inline-block;
+      opacity: 0;
+    }
+    #s1-head .accent {
+      color: #8b8bf7;
+    }
+  </style>
+
+  <div id="root" data-composition-id="s1" data-width="1920" data-height="1080">
+    <div id="s1-grid" data-layout-ignore></div>
+    <div id="s1-vignette" data-layout-ignore></div>
+
+    <div id="s1-shape" class="clip" data-start="0" data-duration="3" data-track-index="1">
+      <div id="s1-shape-in"></div>
+    </div>
+
+    <div id="s1-cursor" class="clip" data-start="0.16" data-duration="2.84" data-track-index="2">
+      <svg viewBox="0 0 24 24" fill="#ededed" stroke="#0a0a0a" stroke-width="1.1" stroke-linejoin="round">
+        <path d="M4.037 4.688a.495.495 0 0 1 .651-.651l16 6.5a.5.5 0 0 1-.063.947l-6.124 1.58a2 2 0 0 0-1.438 1.435l-1.579 6.126a.5.5 0 0 1-.947.063z" />
+      </svg>
+    </div>
+
+    <h1 id="s1-head" class="clip" data-start="1.08" data-duration="1.92" data-track-index="3">
+      <span class="w" id="s1-w1">design,</span>
+      <span class="w accent" id="s1-w2">in a tab.</span>
+    </h1>
+  </div>
+
+  <script>
+    const tl = gsap.timeline({ paused: true });
+
+    tl.fromTo("#s1-grid", { opacity: 0 }, { opacity: 1, duration: 0.7, ease: "power2.out" }, 0);
+
+    tl.fromTo(
+      "#s1-shape-in",
+      { clipPath: "inset(0% 100% 0% 0% round 40px)" },
+      { clipPath: "inset(0% 0% 0% 0% round 40px)", duration: 0.64, ease: "power2.inOut" },
+      0.36,
+    );
+
+    tl.fromTo("#s1-cursor", { x: 648, y: 288, opacity: 0, scale: 0.8 }, { x: 648, y: 288, opacity: 1, scale: 1, duration: 0.2, ease: "power2.out" }, 0.12);
+    tl.to("#s1-cursor", { x: 1250, y: 620, duration: 0.64, ease: "power2.inOut" }, 0.36);
+
+    tl.fromTo("#s1-w1", { opacity: 0, y: 16, filter: "blur(12px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.4, ease: "expo.out" }, 1.12);
+    tl.fromTo("#s1-w2", { opacity: 0, y: 16, filter: "blur(12px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.4, ease: "expo.out" }, 1.26);
+
+    window.__timelines["s1"] = tl;
+    tl.seek(0);
+  </script>
+</template>

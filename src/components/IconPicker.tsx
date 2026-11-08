@@ -43,7 +43,13 @@ export function IconPicker({
   const Current = lib === "lucide" ? getLucideIcon(name) : undefined
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover
+      open={open}
+      onOpenChange={(next) => {
+        if (next) setTab(lib)
+        setOpen(next)
+      }}
+    >
       <PopoverTrigger
         render={
           <Button variant="outline" className="w-full justify-between">
@@ -85,6 +91,7 @@ export function IconPicker({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search icons…"
+            aria-label="Search icons"
             className="pl-8"
           />
         </div>

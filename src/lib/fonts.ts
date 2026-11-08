@@ -28,7 +28,7 @@ const loaded = new Set<string>()
 
 // Font families are interpolated into CSS/URLs; only allow the characters used
 // by real font names.
-const SAFE_FAMILY_RE = /^[\w \-]+$/
+const SAFE_FAMILY_RE = /^[\w -]+$/
 
 function fontKey(family: string, weights: number[]): string {
   return `${family}:${weights.join(",")}`

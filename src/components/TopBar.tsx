@@ -99,11 +99,10 @@ export function TopBar() {
     };
 
     const logo = (
-        <img
-            src="/favicon.svg"
-            width={28}
-            height={28}
-            className="pl-1.5 cursor-copy"
+        <button
+            type="button"
+            aria-label="Copy logo"
+            className="cursor-copy"
             onClick={async () => {
                 try {
                     await copyLogo();
@@ -114,7 +113,9 @@ export function TopBar() {
                     });
                 }
             }}
-        />
+        >
+            <img src="/favicon.svg" width={28} height={28} alt="" className="pl-1.5" />
+        </button>
     );
 
     const zoomGroup = (

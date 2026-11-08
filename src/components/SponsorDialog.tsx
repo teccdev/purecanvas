@@ -63,7 +63,7 @@ export function SponsorDialog({
                             Payable in most currencies and crypto.
                         </p>
                     </div>
-                    <img src="/sponsor-header.png" className="w-62 max-h-62 shrink-0 object-contain"></img>
+                    <img src="/sponsor-header.png" alt="Sponsor header" className="w-62 max-h-62 shrink-0 object-contain"></img>
                 </div>
             </DialogContent>
         </Dialog>

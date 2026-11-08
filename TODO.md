@@ -6,11 +6,12 @@
 > add parenthesized notes at the end if necessary.
 
 ## Critical
-- 
+- rounding, uniform scale don't work on (some?) shapes
 
 ## Current
-- need to add native support for manual image sizes - like canva - and slides
 - fonts aren't loaded immediately - cache used fonts for last project and ensure it stays aligned
+- mobile uniform scaling - ensure uniform scaling behavior is consistent across touch interactions (pinch/resize) on mobile
+- image cropping - native image crop support for placed images (and mobile crop tool)
 ~ pixabay filters (addressed. Waiting on API access approval.)
 
 ## Later

@@ -1,4 +1,4 @@
-import { db } from "./db";
+import { db, saveProjectSnapshot } from "./db";
 import { uid } from "./id";
 import { useDoc } from "@/store/useDoc";
 import { useUI } from "@/store/useUI";
@@ -23,6 +23,19 @@ export function makeProject(name = "Untitled"): ProjectRecord {
 export async function openProject(
     id: string,
 ): Promise<ProjectRecord | undefined> {
+    // Switching projects cancels the pending autosave debounce, so flush the
+    // current document first or the last few edits are lost.
+    const current = useDoc.getState();
+    if (current.projectId && current.projectId !== id) {
+        await saveProjectSnapshot(current.projectId, {
+            name: current.projectName,
+            elements: current.elements,
+            camera: current.camera,
+            artboard: current.artboard,
+        }).catch(() => {
+            /* keep switching even if the flush fails */
+        });
+    }
     const record = await db.projects.get(id);
     if (!record) return undefined;
     localStorage.setItem(LAST_KEY, id);

@@ -90,9 +90,22 @@ export function readDragPayload(e: React.DragEvent): { url: string; user: string
   return { url: parsedUrl.href, user }
 }
 
+/** Fetch with a hard timeout so a stalled CDN cannot hang the caller forever. */
+const FETCH_TIMEOUT_MS = 15_000
+
+async function fetchWithTimeout(url: string): Promise<Response> {
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
+  try {
+    return await fetch(url, { signal: controller.signal })
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
 /** Fetch a stock image's SVG (vector) data, throwing on any failure. */
 export async function fetchSvgBlob(url: string): Promise<Blob> {
-  const res = await fetch(url)
+  const res = await fetchWithTimeout(url)
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
   const text = await res.text()
   if (!text.includes("<svg")) throw new Error("Not an SVG")
@@ -102,7 +115,7 @@ export async function fetchSvgBlob(url: string): Promise<Blob> {
 /** Fetch a stock image as a Blob, with a canvas fallback if CORS blocks the fetch. */
 export async function fetchImageBlob(url: string): Promise<Blob> {
   try {
-    const res = await fetch(url)
+    const res = await fetchWithTimeout(url)
     if (res.ok) return await res.blob()
   } catch {
     // fall through to canvas fallback
@@ -110,8 +123,18 @@ export async function fetchImageBlob(url: string): Promise<Blob> {
   const img = new Image()
   img.crossOrigin = "anonymous"
   await new Promise<void>((resolve, reject) => {
-    img.onload = () => resolve()
-    img.onerror = () => reject(new Error("Could not load image"))
+    const timer = setTimeout(
+      () => reject(new Error("Image load timed out")),
+      FETCH_TIMEOUT_MS,
+    )
+    img.onload = () => {
+      clearTimeout(timer)
+      resolve()
+    }
+    img.onerror = () => {
+      clearTimeout(timer)
+      reject(new Error("Could not load image"))
+    }
     img.src = url
   })
   const canvas = document.createElement("canvas")

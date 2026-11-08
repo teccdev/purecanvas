@@ -60,8 +60,10 @@ npm run preview  # preview the production build
 ## Deployment
 
 The app is a static SPA and deploys to [Vercel](https://vercel.com) with no
-configuration beyond the included `vercel.json`. Import the repository, and
-Vercel detects Vite, runs `npm run build`, and serves `dist/`.
+build configuration beyond the included `vercel.json`. Import the repository,
+and Vercel detects Vite, runs `npm run build`, and serves `dist/`. For production
+analytics, also connect an Upstash Redis database and set `ANALYTICS_PASSWORD`
+(see [Analytics](#analytics)).
 
 Stock image search is served by the `api/pixabay.ts` serverless function at
 `/api/pixabay`. `vercel.json` routes `/api/:path*` to that function _before_ the
@@ -77,6 +79,51 @@ the deployed proxy to work — without it the function returns HTTP 500
 `PIXABAY_KEY environment variable is not set`. Set it for the environments you
 deploy to (Production, Preview, Development, as needed). Locally, put it in an
 untracked `.env` file (already in `.gitignore` — never commit it).
+
+## Analytics
+
+PureCanvas ships a small first-party analytics system instead of a third-party
+script. It records pageviews, unique visitors, sessions, bounce rate, referrers,
+UTM campaigns, approximate country (from Vercel's CDN header), and device /
+browser type. No cookies and no IP addresses are stored.
+
+The dashboard lives at **`/analytics`** and requires `ANALYTICS_PASSWORD`, which
+is read only on the server. A successful login sets a signed, `HttpOnly` session
+cookie (12 hours). Set `ANALYTICS_SESSION_SECRET` to a long random string to sign
+that cookie independently of the password.
+
+### Storage
+
+Production uses **Upstash Redis** over its REST API. Add a free Upstash database
+through the Vercel Marketplace (Storage → Marketplace → Upstash Redis) and make
+sure the project has either pair of variables:
+
+- `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN`, or
+- `KV_REST_API_URL` / `KV_REST_API_TOKEN` (what the Vercel KV integration injects)
+
+Custom prefixes from the Vercel integration are detected automatically. For
+example, a prefix of `UPSTASH_REDIS_REST` produces
+`UPSTASH_REDIS_REST_KV_REST_API_URL` / `UPSTASH_REDIS_REST_KV_REST_API_TOKEN`,
+which also works.
+
+Each pageview is written by a single Lua script, so it costs one Redis command.
+Local development does not need Redis: events are written to
+`.data/analytics-dev.json` (gitignored) and the dashboard works at
+`http://localhost:5173/analytics`.
+
+### Environment separation
+
+Analytics keys are namespaced by `ANALYTICS_ENV`, which falls back to
+`VERCEL_ENV` (`production`, `preview`, `development`). Preview deployments and
+local development therefore never write into production data. In a production
+build the browser tracker only runs on `purecanvas.app` / `www.purecanvas.app`;
+preview hostnames are ignored. `vite preview` also writes to the local file.
+
+### Privacy policy
+
+`/privacy` is a short, plain-language policy linked from the bottom-right footer
+(and from the mobile welcome dialog). It describes the anonymous analytics,
+Pixabay image search, and data retention.
 
 ## Tech
 

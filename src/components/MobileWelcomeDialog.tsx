@@ -59,6 +59,14 @@ export function MobileWelcomeDialog() {
           finger, pinch to zoom, tap to select, and press and hold to draw a
           selection box.
         </DialogDescription>
+        <p className="text-xs text-muted-foreground">
+          <a
+            href="/privacy"
+            className="underline underline-offset-4 hover:text-foreground"
+          >
+            Privacy policy
+          </a>
+        </p>
         <DialogFooter>
           <Button onClick={dismiss}>Continue</Button>
         </DialogFooter>

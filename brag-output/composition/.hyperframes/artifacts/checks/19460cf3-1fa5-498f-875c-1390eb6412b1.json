@@ -1,0 +1,1925 @@
+{
+  "ok": true,
+  "strict": false,
+  "browserSkipped": false,
+  "lint": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 27,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "duplicate_audio_track",
+        "severity": "warning",
+        "message": "Multiple audible <audio>/<video> elements on track 11 overlap (assets/sfx/click-a.ogg at 3.03-3.43s, assets/sfx/click-b.ogg at 3.2-3.6s). This causes layered audio playback.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Use non-overlapping time windows or different track indices."
+      },
+      {
+        "code": "duplicate_audio_track",
+        "severity": "warning",
+        "message": "Multiple audible <audio>/<video> elements on track 11 overlap (assets/sfx/click-b.ogg at 3.2-3.6s, assets/sfx/click-c.ogg at 3.46-3.86s). This causes layered audio playback.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Use non-overlapping time windows or different track indices."
+      },
+      {
+        "code": "duplicate_audio_track",
+        "severity": "warning",
+        "message": "Multiple audible <audio>/<video> elements on track 11 overlap (assets/sfx/click-b.ogg at 3.2-3.6s, assets/sfx/soft-a.ogg at 3.44-4.04s). This causes layered audio playback.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Use non-overlapping time windows or different track indices."
+      },
+      {
+        "code": "duplicate_audio_track",
+        "severity": "warning",
+        "message": "Multiple audible <audio>/<video> elements on track 11 overlap (assets/sfx/click-c.ogg at 3.46-3.86s, assets/sfx/soft-a.ogg at 3.44-4.04s). This causes layered audio playback.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Use non-overlapping time windows or different track indices."
+      },
+      {
+        "code": "duplicate_audio_track",
+        "severity": "warning",
+        "message": "Multiple audible <audio>/<video> elements on track 11 overlap (assets/sfx/click-b.ogg at 6.75-7.15s, assets/sfx/key-a.wav at 7.02-7.52s). This causes layered audio playback.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Use non-overlapping time windows or different track indices."
+      },
+      {
+        "code": "duplicate_audio_track",
+        "severity": "warning",
+        "message": "Multiple audible <audio>/<video> elements on track 11 overlap (assets/sfx/key-a.wav at 7.02-7.52s, assets/sfx/key-b.wav at 7.17-7.67s). This causes layered audio playback.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Use non-overlapping time windows or different track indices."
+      },
+      {
+        "code": "duplicate_audio_track",
+        "severity": "warning",
+        "message": "Multiple audible <audio>/<video> elements on track 11 overlap (assets/sfx/key-a.wav at 7.02-7.52s, assets/sfx/key-c.wav at 7.33-7.83s). This causes layered audio playback.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Use non-overlapping time windows or different track indices."
+      },
+      {
+        "code": "duplicate_audio_track",
+        "severity": "warning",
+        "message": "Multiple audible <audio>/<video> elements on track 11 overlap (assets/sfx/key-a.wav at 7.02-7.52s, assets/sfx/key-d.wav at 7.5-8s). This causes layered audio playback.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Use non-overlapping time windows or different track indices."
+      },
+      {
+        "code": "duplicate_audio_track",
+        "severity": "warning",
+        "message": "Multiple audible <audio>/<video> elements on track 11 overlap (assets/sfx/key-b.wav at 7.17-7.67s, assets/sfx/key-c.wav at 7.33-7.83s). This causes layered audio playback.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Use non-overlapping time windows or different track indices."
+      },
+      {
+        "code": "duplicate_audio_track",
+        "severity": "warning",
+        "message": "Multiple audible <audio>/<video> elements on track 11 overlap (assets/sfx/key-b.wav at 7.17-7.67s, assets/sfx/key-d.wav at 7.5-8s). This causes layered audio playback.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Use non-overlapping time windows or different track indices."
+      },
+      {
+        "code": "duplicate_audio_track",
+        "severity": "warning",
+        "message": "Multiple audible <audio>/<video> elements on track 11 overlap (assets/sfx/key-b.wav at 7.17-7.67s, assets/sfx/key-a.wav at 7.66-8.16s). This causes layered audio playback.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Use non-overlapping time windows or different track indices."
+      },
+      {
+        "code": "duplicate_audio_track",
+        "severity": "warning",
+        "message": "Multiple audible <audio>/<video> elements on track 11 overlap (assets/sfx/key-c.wav at 7.33-7.83s, assets/sfx/key-d.wav at 7.5-8s). This causes layered audio playback.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Use non-overlapping time windows or different track indices."
+      },
+      {
+        "code": "duplicate_audio_track",
+        "severity": "warning",
+        "message": "Multiple audible <audio>/<video> elements on track 11 overlap (assets/sfx/key-c.wav at 7.33-7.83s, assets/sfx/key-a.wav at 7.66-8.16s). This causes layered audio playback.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Use non-overlapping time windows or different track indices."
+      },
+      {
+        "code": "duplicate_audio_track",
+        "severity": "warning",
+        "message": "Multiple audible <audio>/<video> elements on track 11 overlap (assets/sfx/key-d.wav at 7.5-8s, assets/sfx/key-a.wav at 7.66-8.16s). This causes layered audio playback.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Use non-overlapping time windows or different track indices."
+      },
+      {
+        "code": "duplicate_audio_track",
+        "severity": "warning",
+        "message": "Multiple audible <audio>/<video> elements on track 11 overlap (assets/sfx/key-a.wav at 7.66-8.16s, assets/sfx/soft-c.ogg at 8.14-8.74s). This causes layered audio playback.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Use non-overlapping time windows or different track indices."
+      },
+      {
+        "code": "duplicate_audio_track",
+        "severity": "warning",
+        "message": "Multiple audible <audio>/<video> elements on track 11 overlap (assets/sfx/click-c.ogg at 10.86-11.26s, assets/sfx/click-b.ogg at 10.99-11.39s). This causes layered audio playback.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Use non-overlapping time windows or different track indices."
+      },
+      {
+        "code": "duplicate_audio_track",
+        "severity": "warning",
+        "message": "Multiple audible <audio>/<video> elements on track 11 overlap (assets/sfx/click-c.ogg at 10.86-11.26s, assets/sfx/bong.ogg at 11.13-11.73s). This causes layered audio playback.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Use non-overlapping time windows or different track indices."
+      },
+      {
+        "code": "duplicate_audio_track",
+        "severity": "warning",
+        "message": "Multiple audible <audio>/<video> elements on track 11 overlap (assets/sfx/click-b.ogg at 10.99-11.39s, assets/sfx/bong.ogg at 11.13-11.73s). This causes layered audio playback.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Use non-overlapping time windows or different track indices."
+      },
+      {
+        "code": "duplicate_audio_track",
+        "severity": "warning",
+        "message": "Multiple audible <audio>/<video> elements on track 11 overlap (assets/sfx/bong.ogg at 11.13-11.73s, assets/sfx/soft-c.ogg at 11.63-12.23s). This causes layered audio playback.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Use non-overlapping time windows or different track indices."
+      },
+      {
+        "code": "duplicate_audio_track",
+        "severity": "warning",
+        "message": "Multiple audible <audio>/<video> elements on track 11 overlap (assets/sfx/soft-c.ogg at 11.63-12.23s, assets/sfx/soft-a.ogg at 12.13-12.73s). This causes layered audio playback.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Use non-overlapping time windows or different track indices."
+      },
+      {
+        "code": "gsap_repeated_fromto_without_baseline",
+        "severity": "warning",
+        "message": "4 tl.fromTo() calls target \"#s1-cursor\" with no stable baseline. The last-authored fromTo \"from\" values become the element's resting state for any seek before the first tween actually runs, because GSAP applies fromTo from-values at authoring time (immediateRender), not at tween position.",
+        "selector": "#s1-cursor",
+        "dataAttributes": {},
+        "sourceFile": "/home/austin/Projects/purecanvas/brag-output/composition/compositions/s1-hook.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Add `immediateRender: false` to every fromTo except the earliest-positioned one (at 0.14s), so pre-first-tween seeks keep its \"from\" values. A hiding `tl.set(..., 0)` baseline trips gsap_timeline_set_initial_hide, and a `gsap.set` authored before the fromTo calls is overwritten by them."
+      },
+      {
+        "code": "overlapping_gsap_tweens",
+        "severity": "warning",
+        "message": "GSAP tweens overlap on \"#s3-cursor\" for x, y between 0.06s and 0.18s.",
+        "selector": "#s3-cursor",
+        "dataAttributes": {},
+        "sourceFile": "/home/austin/Projects/purecanvas/brag-output/composition/compositions/s3-make.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Shorten the earlier tween, move the later tween, or add `overwrite: \"auto\"`."
+      },
+      {
+        "code": "overlapping_gsap_tweens",
+        "severity": "warning",
+        "message": "GSAP tweens overlap on \"#s3-cursor\" for x, y between 0.36s and 0.38s.",
+        "selector": "#s3-cursor",
+        "dataAttributes": {},
+        "sourceFile": "/home/austin/Projects/purecanvas/brag-output/composition/compositions/s3-make.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Shorten the earlier tween, move the later tween, or add `overwrite: \"auto\"`."
+      },
+      {
+        "code": "gsap_repeated_fromto_without_baseline",
+        "severity": "warning",
+        "message": "4 tl.fromTo() calls target \"#s3-cursor\" with no stable baseline. The last-authored fromTo \"from\" values become the element's resting state for any seek before the first tween actually runs, because GSAP applies fromTo from-values at authoring time (immediateRender), not at tween position.",
+        "selector": "#s3-cursor",
+        "dataAttributes": {},
+        "sourceFile": "/home/austin/Projects/purecanvas/brag-output/composition/compositions/s3-make.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Add `immediateRender: false` to every fromTo except the earliest-positioned one (at 0.04s), so pre-first-tween seeks keep its \"from\" values. A hiding `tl.set(..., 0)` baseline trips gsap_timeline_set_initial_hide, and a `gsap.set` authored before the fromTo calls is overwritten by them."
+      },
+      {
+        "code": "overlapping_gsap_tweens",
+        "severity": "warning",
+        "message": "GSAP tweens overlap on \"#s4-cursor\" for x, y between 0.06s and 0.16s.",
+        "selector": "#s4-cursor",
+        "dataAttributes": {},
+        "sourceFile": "/home/austin/Projects/purecanvas/brag-output/composition/compositions/s4-export.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Shorten the earlier tween, move the later tween, or add `overwrite: \"auto\"`."
+      },
+      {
+        "code": "gsap_repeated_fromto_without_baseline",
+        "severity": "warning",
+        "message": "3 tl.fromTo() calls target \"#s4-cursor\" with no stable baseline. The last-authored fromTo \"from\" values become the element's resting state for any seek before the first tween actually runs, because GSAP applies fromTo from-values at authoring time (immediateRender), not at tween position.",
+        "selector": "#s4-cursor",
+        "dataAttributes": {},
+        "sourceFile": "/home/austin/Projects/purecanvas/brag-output/composition/compositions/s4-export.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Add `immediateRender: false` to every fromTo except the earliest-positioned one (at 0.02s), so pre-first-tween seeks keep its \"from\" values. A hiding `tl.set(..., 0)` baseline trips gsap_timeline_set_initial_hide, and a `gsap.set` authored before the fromTo calls is overwritten by them."
+      },
+      {
+        "code": "gsap_repeated_fromto_without_baseline",
+        "severity": "warning",
+        "message": "2 tl.fromTo() calls target \"#s4-export\" with no stable baseline. The last-authored fromTo \"from\" values become the element's resting state for any seek before the first tween actually runs, because GSAP applies fromTo from-values at authoring time (immediateRender), not at tween position.",
+        "selector": "#s4-export",
+        "dataAttributes": {},
+        "sourceFile": "/home/austin/Projects/purecanvas/brag-output/composition/compositions/s4-export.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Add `immediateRender: false` to every fromTo except the earliest-positioned one (at 0.34s), so pre-first-tween seeks keep its \"from\" values. A hiding `tl.set(..., 0)` baseline trips gsap_timeline_set_initial_hide, and a `gsap.set` authored before the fromTo calls is overwritten by them."
+      }
+    ],
+    "filesScanned": 7
+  },
+  "runtime": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 22,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "clip_media_fit",
+        "severity": "warning",
+        "message": "Audio \"sfx-s1a\" is 0.06s but its slot (data-duration) is 0.40s — the slot is shortened to the media length when rendered. Set data-duration to ~0.06s if that isn't intended.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {
+          "data-composition-id": "main",
+          "data-start": "0",
+          "data-duration": "21",
+          "data-width": "1920",
+          "data-height": "1080"
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "time": 0
+      },
+      {
+        "code": "clip_media_fit",
+        "severity": "warning",
+        "message": "Audio \"sfx-s1b\" is 0.14s but its slot (data-duration) is 0.60s — the slot is shortened to the media length when rendered. Set data-duration to ~0.14s if that isn't intended.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {
+          "data-composition-id": "main",
+          "data-start": "0",
+          "data-duration": "21",
+          "data-width": "1920",
+          "data-height": "1080"
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "time": 0
+      },
+      {
+        "code": "clip_media_fit",
+        "severity": "warning",
+        "message": "Audio \"sfx-s2a\" is 0.01s but its slot (data-duration) is 0.40s — the slot is shortened to the media length when rendered. Set data-duration to ~0.01s if that isn't intended.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {
+          "data-composition-id": "main",
+          "data-start": "0",
+          "data-duration": "21",
+          "data-width": "1920",
+          "data-height": "1080"
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "time": 0
+      },
+      {
+        "code": "clip_media_fit",
+        "severity": "warning",
+        "message": "Audio \"sfx-s2b\" is 0.01s but its slot (data-duration) is 0.40s — the slot is shortened to the media length when rendered. Set data-duration to ~0.01s if that isn't intended.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {
+          "data-composition-id": "main",
+          "data-start": "0",
+          "data-duration": "21",
+          "data-width": "1920",
+          "data-height": "1080"
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "time": 0
+      },
+      {
+        "code": "clip_media_fit",
+        "severity": "warning",
+        "message": "Audio \"sfx-s2c\" is 0.06s but its slot (data-duration) is 0.40s — the slot is shortened to the media length when rendered. Set data-duration to ~0.06s if that isn't intended.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {
+          "data-composition-id": "main",
+          "data-start": "0",
+          "data-duration": "21",
+          "data-width": "1920",
+          "data-height": "1080"
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "time": 0
+      },
+      {
+        "code": "clip_media_fit",
+        "severity": "warning",
+        "message": "Audio \"sfx-s2d\" is 0.19s but its slot (data-duration) is 0.60s — the slot is shortened to the media length when rendered. Set data-duration to ~0.19s if that isn't intended.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {
+          "data-composition-id": "main",
+          "data-start": "0",
+          "data-duration": "21",
+          "data-width": "1920",
+          "data-height": "1080"
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "time": 0
+      },
+      {
+        "code": "clip_media_fit",
+        "severity": "warning",
+        "message": "Audio \"sfx-s3a\" is 0.01s but its slot (data-duration) is 0.40s — the slot is shortened to the media length when rendered. Set data-duration to ~0.01s if that isn't intended.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {
+          "data-composition-id": "main",
+          "data-start": "0",
+          "data-duration": "21",
+          "data-width": "1920",
+          "data-height": "1080"
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "time": 0
+      },
+      {
+        "code": "clip_media_fit",
+        "severity": "warning",
+        "message": "Audio \"sfx-s3k1\" is 0.25s but its slot (data-duration) is 0.50s — the slot is shortened to the media length when rendered. Set data-duration to ~0.25s if that isn't intended.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {
+          "data-composition-id": "main",
+          "data-start": "0",
+          "data-duration": "21",
+          "data-width": "1920",
+          "data-height": "1080"
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "time": 0
+      },
+      {
+        "code": "clip_media_fit",
+        "severity": "warning",
+        "message": "Audio \"sfx-s3k2\" is 0.25s but its slot (data-duration) is 0.50s — the slot is shortened to the media length when rendered. Set data-duration to ~0.25s if that isn't intended.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {
+          "data-composition-id": "main",
+          "data-start": "0",
+          "data-duration": "21",
+          "data-width": "1920",
+          "data-height": "1080"
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "time": 0
+      },
+      {
+        "code": "clip_media_fit",
+        "severity": "warning",
+        "message": "Audio \"sfx-s3k3\" is 0.25s but its slot (data-duration) is 0.50s — the slot is shortened to the media length when rendered. Set data-duration to ~0.25s if that isn't intended.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {
+          "data-composition-id": "main",
+          "data-start": "0",
+          "data-duration": "21",
+          "data-width": "1920",
+          "data-height": "1080"
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "time": 0
+      },
+      {
+        "code": "clip_media_fit",
+        "severity": "warning",
+        "message": "Audio \"sfx-s3k4\" is 0.25s but its slot (data-duration) is 0.50s — the slot is shortened to the media length when rendered. Set data-duration to ~0.25s if that isn't intended.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {
+          "data-composition-id": "main",
+          "data-start": "0",
+          "data-duration": "21",
+          "data-width": "1920",
+          "data-height": "1080"
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "time": 0
+      },
+      {
+        "code": "clip_media_fit",
+        "severity": "warning",
+        "message": "Audio \"sfx-s3k5\" is 0.25s but its slot (data-duration) is 0.50s — the slot is shortened to the media length when rendered. Set data-duration to ~0.25s if that isn't intended.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {
+          "data-composition-id": "main",
+          "data-start": "0",
+          "data-duration": "21",
+          "data-width": "1920",
+          "data-height": "1080"
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "time": 0
+      },
+      {
+        "code": "clip_media_fit",
+        "severity": "warning",
+        "message": "Audio \"sfx-s3b\" is 0.15s but its slot (data-duration) is 0.60s — the slot is shortened to the media length when rendered. Set data-duration to ~0.15s if that isn't intended.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {
+          "data-composition-id": "main",
+          "data-start": "0",
+          "data-duration": "21",
+          "data-width": "1920",
+          "data-height": "1080"
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "time": 0
+      },
+      {
+        "code": "clip_media_fit",
+        "severity": "warning",
+        "message": "Audio \"sfx-s3c\" is 0.01s but its slot (data-duration) is 0.40s — the slot is shortened to the media length when rendered. Set data-duration to ~0.01s if that isn't intended.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {
+          "data-composition-id": "main",
+          "data-start": "0",
+          "data-duration": "21",
+          "data-width": "1920",
+          "data-height": "1080"
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "time": 0
+      },
+      {
+        "code": "clip_media_fit",
+        "severity": "warning",
+        "message": "Audio \"sfx-s4a\" is 0.06s but its slot (data-duration) is 0.40s — the slot is shortened to the media length when rendered. Set data-duration to ~0.06s if that isn't intended.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {
+          "data-composition-id": "main",
+          "data-start": "0",
+          "data-duration": "21",
+          "data-width": "1920",
+          "data-height": "1080"
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "time": 0
+      },
+      {
+        "code": "clip_media_fit",
+        "severity": "warning",
+        "message": "Audio \"sfx-s4b\" is 0.01s but its slot (data-duration) is 0.40s — the slot is shortened to the media length when rendered. Set data-duration to ~0.01s if that isn't intended.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {
+          "data-composition-id": "main",
+          "data-start": "0",
+          "data-duration": "21",
+          "data-width": "1920",
+          "data-height": "1080"
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "time": 0
+      },
+      {
+        "code": "clip_media_fit",
+        "severity": "warning",
+        "message": "Audio \"sfx-s4c1\" is 0.13s but its slot (data-duration) is 0.60s — the slot is shortened to the media length when rendered. Set data-duration to ~0.13s if that isn't intended.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {
+          "data-composition-id": "main",
+          "data-start": "0",
+          "data-duration": "21",
+          "data-width": "1920",
+          "data-height": "1080"
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "time": 0
+      },
+      {
+        "code": "clip_media_fit",
+        "severity": "warning",
+        "message": "Audio \"sfx-s4c2\" is 0.15s but its slot (data-duration) is 0.60s — the slot is shortened to the media length when rendered. Set data-duration to ~0.15s if that isn't intended.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {
+          "data-composition-id": "main",
+          "data-start": "0",
+          "data-duration": "21",
+          "data-width": "1920",
+          "data-height": "1080"
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "time": 0
+      },
+      {
+        "code": "clip_media_fit",
+        "severity": "warning",
+        "message": "Audio \"sfx-s4c3\" is 0.19s but its slot (data-duration) is 0.60s — the slot is shortened to the media length when rendered. Set data-duration to ~0.19s if that isn't intended.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {
+          "data-composition-id": "main",
+          "data-start": "0",
+          "data-duration": "21",
+          "data-width": "1920",
+          "data-height": "1080"
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "time": 0
+      },
+      {
+        "code": "clip_media_fit",
+        "severity": "warning",
+        "message": "Audio \"sfx-s5a\" is 0.34s but its slot (data-duration) is 0.60s — the slot is shortened to the media length when rendered. Set data-duration to ~0.34s if that isn't intended.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {
+          "data-composition-id": "main",
+          "data-start": "0",
+          "data-duration": "21",
+          "data-width": "1920",
+          "data-height": "1080"
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "time": 0
+      },
+      {
+        "code": "clip_media_fit",
+        "severity": "warning",
+        "message": "Audio \"sfx-s5b\" is 0.34s but its slot (data-duration) is 0.60s — the slot is shortened to the media length when rendered. Set data-duration to ~0.34s if that isn't intended.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {
+          "data-composition-id": "main",
+          "data-start": "0",
+          "data-duration": "21",
+          "data-width": "1920",
+          "data-height": "1080"
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "time": 0
+      },
+      {
+        "code": "clip_media_fit",
+        "severity": "warning",
+        "message": "Audio \"sfx-s5c\" is 0.34s but its slot (data-duration) is 0.60s — the slot is shortened to the media length when rendered. Set data-duration to ~0.34s if that isn't intended.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {
+          "data-composition-id": "main",
+          "data-start": "0",
+          "data-duration": "21",
+          "data-width": "1920",
+          "data-height": "1080"
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "time": 0
+      }
+    ]
+  },
+  "layout": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "duration": 21,
+    "samples": [
+      1.167,
+      3.5,
+      5.833,
+      8.167,
+      10.5,
+      12.833,
+      15.167,
+      17.5,
+      19.833
+    ],
+    "transitionSamples": [],
+    "transitionSamplesDropped": 0,
+    "tolerance": 2,
+    "totalIssueCount": 0,
+    "truncated": false
+  },
+  "motion": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": false,
+    "samples": 0
+  },
+  "contrast": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 1,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 3.69:1; WCAG AA requires 4.5:1.",
+        "text": "1 SELECTED",
+        "fg": "rgb(107,107,107)",
+        "bg": "rgb(11,11,11)",
+        "ratio": 3.69,
+        "requiredRatio": 4.5,
+        "suggestedColor": "rgb(121,121,121)",
+        "large": false,
+        "selector": "div > div:nth-of-type(2) > div > div:nth-of-type(4) > div > div:nth-of-type(1) > span:nth-of-type(2)",
+        "dataAttributes": {},
+        "sourceFile": "compositions/s2-app.html",
+        "bbox": {
+          "x": 244.1875,
+          "y": 102,
+          "width": 72.8125,
+          "height": 14
+        },
+        "time": 5.833,
+        "times": [
+          5.833
+        ]
+      }
+    ],
+    "enabled": true,
+    "samples": [
+      1.167,
+      5.833,
+      10.5,
+      15.167,
+      19.833
+    ],
+    "checked": 76,
+    "passed": 75
+  },
+  "craft": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 7,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "first_frame_empty",
+        "severity": "warning",
+        "message": "Frame 0 shows only the background, and the first frame is the thumbnail on social players: have the title or key image already on screen at 0 s instead of entering from nothing; see references/review.md.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0
+      },
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and 26 text elements stay under it for 0.5 s or more, the smallest \"1 SELECTED\" at 11 px: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "1 SELECTED",
+        "selector": "#s2-panel-in > div:nth-of-type(1) > span:nth-of-type(2)",
+        "dataAttributes": {},
+        "sourceFile": "compositions/s2-app.html",
+        "bbox": {
+          "x": 147.42,
+          "y": 102,
+          "width": 72.81,
+          "height": 14
+        },
+        "time": 3.25,
+        "times": [
+          3.125,
+          3.125,
+          3.125,
+          3.125,
+          3.125,
+          3.125,
+          3.25,
+          3.375,
+          3.625,
+          3.625,
+          3.75,
+          3.75,
+          3.875,
+          3.875,
+          3.875,
+          3.875,
+          3.875,
+          3.875,
+          4,
+          4,
+          4,
+          4,
+          4,
+          4,
+          4.125,
+          4.125
+        ],
+        "fontPx": 11,
+        "floorPx": 28,
+        "seconds": 3.375,
+        "elements": [
+          {
+            "selector": "#s2-panel-in > div:nth-of-type(1) > span:nth-of-type(2)",
+            "text": "1 SELECTED",
+            "fontPx": 11,
+            "time": 3.25,
+            "seconds": 3.375
+          },
+          {
+            "selector": "#s2-panel-in > div:nth-of-type(1) > span:nth-of-type(1)",
+            "text": "TEXT",
+            "fontPx": 12,
+            "time": 3.375,
+            "seconds": 3.25
+          },
+          {
+            "selector": "#s2-panel-in > div:nth-of-type(6) > span:nth-of-type(1)",
+            "text": "Group",
+            "fontPx": 14,
+            "time": 3.875,
+            "seconds": 2.75
+          },
+          {
+            "selector": "#s2-panel-in > div:nth-of-type(6) > span:nth-of-type(2)",
+            "text": "Ungroup",
+            "fontPx": 14,
+            "time": 3.875,
+            "seconds": 2.75
+          },
+          {
+            "selector": "#s2-bar-in > div:nth-of-type(1) > span:nth-of-type(2)",
+            "text": "Untitled",
+            "fontPx": 15,
+            "time": 3.125,
+            "seconds": 3.5
+          },
+          {
+            "selector": "#s2-bar-in > div:nth-of-type(1) > span:nth-of-type(5)",
+            "text": "100%",
+            "fontPx": 15,
+            "time": 3.125,
+            "seconds": 3.5
+          },
+          {
+            "selector": "#s2-bar-in > div:nth-of-type(2) > span:nth-of-type(1)",
+            "text": "Projects",
+            "fontPx": 15,
+            "time": 3.125,
+            "seconds": 3.5
+          },
+          {
+            "selector": "#s2-bar-in > div:nth-of-type(2) > span:nth-of-type(2)",
+            "text": "Present",
+            "fontPx": 15,
+            "time": 3.125,
+            "seconds": 3.5
+          },
+          {
+            "selector": "#s2-bar-in > div:nth-of-type(2) > span:nth-of-type(3)",
+            "text": "Export",
+            "fontPx": 15,
+            "time": 3.125,
+            "seconds": 3.5
+          },
+          {
+            "selector": "#s2-panel-in > div:nth-of-type(2) > span:nth-of-type(1)",
+            "text": "Opacity",
+            "fontPx": 15,
+            "time": 3.625,
+            "seconds": 3
+          },
+          {
+            "selector": "#s2-panel-in > div:nth-of-type(2) > span:nth-of-type(2)",
+            "text": "100%",
+            "fontPx": 15,
+            "time": 3.625,
+            "seconds": 3
+          },
+          {
+            "selector": "#s2-panel-in > div:nth-of-type(4) > span:nth-of-type(1)",
+            "text": "Rotation",
+            "fontPx": 15,
+            "time": 3.75,
+            "seconds": 2.875
+          },
+          {
+            "selector": "#s2-panel-in > div:nth-of-type(4) > span:nth-of-type(2)",
+            "text": "0°",
+            "fontPx": 15,
+            "time": 3.75,
+            "seconds": 2.875
+          },
+          {
+            "selector": "#s2-panel-in > div:nth-of-type(8) > span:nth-of-type(1)",
+            "text": "Font",
+            "fontPx": 15,
+            "time": 3.875,
+            "seconds": 2.75
+          },
+          {
+            "selector": "#s2-panel-in > div:nth-of-type(8) > span:nth-of-type(2)",
+            "text": "Inter",
+            "fontPx": 15,
+            "time": 3.875,
+            "seconds": 2.75
+          },
+          {
+            "selector": "#s2-panel-in > div:nth-of-type(9) > span:nth-of-type(1)",
+            "text": "Size",
+            "fontPx": 15,
+            "time": 3.875,
+            "seconds": 2.75
+          },
+          {
+            "selector": "#s2-panel-in > div:nth-of-type(9) > span:nth-of-type(2)",
+            "text": "32",
+            "fontPx": 15,
+            "time": 3.875,
+            "seconds": 2.75
+          },
+          {
+            "selector": "#s2-panel-in > div:nth-of-type(10) > span:nth-of-type(1)",
+            "text": "Weight",
+            "fontPx": 15,
+            "time": 4,
+            "seconds": 2.625
+          },
+          {
+            "selector": "#s2-panel-in > div:nth-of-type(10) > span:nth-of-type(2)",
+            "text": "600",
+            "fontPx": 15,
+            "time": 4,
+            "seconds": 2.625
+          },
+          {
+            "selector": "#s2-panel-in > div:nth-of-type(11) > span:nth-of-type(1)",
+            "text": "Fill",
+            "fontPx": 15,
+            "time": 4,
+            "seconds": 2.625
+          },
+          {
+            "selector": "#s2-panel-in > div:nth-of-type(11) > span:nth-of-type(3)",
+            "text": "#8B8BF7",
+            "fontPx": 15,
+            "time": 4,
+            "seconds": 2.625
+          },
+          {
+            "selector": "#s2-panel-in > div:nth-of-type(13) > span:nth-of-type(1)",
+            "text": "Outline",
+            "fontPx": 15,
+            "time": 4,
+            "seconds": 2.625
+          },
+          {
+            "selector": "#s2-panel-in > div:nth-of-type(13) > span:nth-of-type(2)",
+            "text": "0 px",
+            "fontPx": 15,
+            "time": 4,
+            "seconds": 2.625
+          },
+          {
+            "selector": "#s2-panel-in > div:nth-of-type(14) > span:nth-of-type(1)",
+            "text": "Shadow",
+            "fontPx": 15,
+            "time": 4.125,
+            "seconds": 2.5
+          },
+          {
+            "selector": "#s2-panel-in > div:nth-of-type(14) > span:nth-of-type(2)",
+            "text": "None",
+            "fontPx": 15,
+            "time": 4.125,
+            "seconds": 2.5
+          },
+          {
+            "selector": "#s2-bar-in > div:nth-of-type(1) > span:nth-of-type(1)",
+            "text": "PureCanvas",
+            "fontPx": 20,
+            "time": 3.125,
+            "seconds": 3.5
+          }
+        ]
+      },
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and 29 text elements stay under it for 0.5 s or more, the smallest \"1 SELECTED\" at 11 px: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "1 SELECTED",
+        "selector": "#s3-c1",
+        "dataAttributes": {},
+        "sourceFile": "compositions/s3-make.html",
+        "bbox": {
+          "x": 244.19,
+          "y": 102,
+          "width": 72.81,
+          "height": 14
+        },
+        "time": 6.625,
+        "times": [
+          6.625,
+          6.625,
+          6.625,
+          6.625,
+          6.625,
+          6.625,
+          6.625,
+          6.625,
+          6.625,
+          6.625,
+          6.625,
+          6.625,
+          6.625,
+          6.625,
+          6.625,
+          6.625,
+          6.625,
+          6.625,
+          6.625,
+          6.625,
+          6.625,
+          6.625,
+          6.625,
+          6.625,
+          6.625,
+          6.625,
+          9,
+          9.125,
+          9.125
+        ],
+        "fontPx": 11,
+        "floorPx": 28,
+        "seconds": 2.375,
+        "elements": [
+          {
+            "selector": "#s3-c1",
+            "text": "1 SELECTED",
+            "fontPx": 11,
+            "time": 6.625,
+            "seconds": 2.375
+          },
+          {
+            "selector": "#s3-c2",
+            "text": "3 SELECTED",
+            "fontPx": 11,
+            "time": 9,
+            "seconds": 1.5
+          },
+          {
+            "selector": "#s3-kicker",
+            "text": "TEXT",
+            "fontPx": 12,
+            "time": 6.625,
+            "seconds": 3.875
+          },
+          {
+            "selector": "#s3-panel-in > div:nth-of-type(6) > span:nth-of-type(1)",
+            "text": "Group",
+            "fontPx": 14,
+            "time": 6.625,
+            "seconds": 3.875
+          },
+          {
+            "selector": "#s3-panel-in > div:nth-of-type(6) > span:nth-of-type(2)",
+            "text": "Ungroup",
+            "fontPx": 14,
+            "time": 6.625,
+            "seconds": 3.875
+          },
+          {
+            "selector": "#s3-bar-in > div:nth-of-type(1) > span:nth-of-type(2)",
+            "text": "Untitled",
+            "fontPx": 15,
+            "time": 6.625,
+            "seconds": 3.875
+          },
+          {
+            "selector": "#s3-bar-in > div:nth-of-type(1) > span:nth-of-type(5)",
+            "text": "100%",
+            "fontPx": 15,
+            "time": 6.625,
+            "seconds": 3.875
+          },
+          {
+            "selector": "#s3-bar-in > div:nth-of-type(2) > span:nth-of-type(1)",
+            "text": "Projects",
+            "fontPx": 15,
+            "time": 6.625,
+            "seconds": 3.875
+          },
+          {
+            "selector": "#s3-bar-in > div:nth-of-type(2) > span:nth-of-type(2)",
+            "text": "Present",
+            "fontPx": 15,
+            "time": 6.625,
+            "seconds": 3.875
+          },
+          {
+            "selector": "#s3-bar-in > div:nth-of-type(2) > span:nth-of-type(3)",
+            "text": "Export",
+            "fontPx": 15,
+            "time": 6.625,
+            "seconds": 3.875
+          },
+          {
+            "selector": "#s3-panel-in > div:nth-of-type(2) > span:nth-of-type(1)",
+            "text": "Opacity",
+            "fontPx": 15,
+            "time": 6.625,
+            "seconds": 3.875
+          },
+          {
+            "selector": "#s3-panel-in > div:nth-of-type(2) > span:nth-of-type(2)",
+            "text": "100%",
+            "fontPx": 15,
+            "time": 6.625,
+            "seconds": 3.875
+          },
+          {
+            "selector": "#s3-panel-in > div:nth-of-type(4) > span:nth-of-type(1)",
+            "text": "Rotation",
+            "fontPx": 15,
+            "time": 6.625,
+            "seconds": 3.875
+          },
+          {
+            "selector": "#s3-panel-in > div:nth-of-type(4) > span:nth-of-type(2)",
+            "text": "0°",
+            "fontPx": 15,
+            "time": 6.625,
+            "seconds": 3.875
+          },
+          {
+            "selector": "#s3-panel-in > div:nth-of-type(8) > span:nth-of-type(1)",
+            "text": "Font",
+            "fontPx": 15,
+            "time": 6.625,
+            "seconds": 3.875
+          },
+          {
+            "selector": "#s3-panel-in > div:nth-of-type(8) > span:nth-of-type(2)",
+            "text": "Inter",
+            "fontPx": 15,
+            "time": 6.625,
+            "seconds": 3.875
+          },
+          {
+            "selector": "#s3-panel-in > div:nth-of-type(9) > span:nth-of-type(1)",
+            "text": "Size",
+            "fontPx": 15,
+            "time": 6.625,
+            "seconds": 3.875
+          },
+          {
+            "selector": "#s3-panel-in > div:nth-of-type(9) > span:nth-of-type(2)",
+            "text": "76",
+            "fontPx": 15,
+            "time": 6.625,
+            "seconds": 3.875
+          },
+          {
+            "selector": "#s3-panel-in > div:nth-of-type(10) > span:nth-of-type(1)",
+            "text": "Weight",
+            "fontPx": 15,
+            "time": 6.625,
+            "seconds": 3.875
+          },
+          {
+            "selector": "#s3-panel-in > div:nth-of-type(10) > span:nth-of-type(2)",
+            "text": "600",
+            "fontPx": 15,
+            "time": 6.625,
+            "seconds": 3.875
+          },
+          {
+            "selector": "#s3-panel-in > div:nth-of-type(11) > span:nth-of-type(1)",
+            "text": "Fill",
+            "fontPx": 15,
+            "time": 6.625,
+            "seconds": 3.875
+          },
+          {
+            "selector": "#s3-panel-in > div:nth-of-type(11) > span:nth-of-type(3)",
+            "text": "#8B8BF7",
+            "fontPx": 15,
+            "time": 6.625,
+            "seconds": 3.875
+          },
+          {
+            "selector": "#s3-panel-in > div:nth-of-type(13) > span:nth-of-type(1)",
+            "text": "Outline",
+            "fontPx": 15,
+            "time": 6.625,
+            "seconds": 3.875
+          },
+          {
+            "selector": "#s3-panel-in > div:nth-of-type(13) > span:nth-of-type(2)",
+            "text": "0 px",
+            "fontPx": 15,
+            "time": 6.625,
+            "seconds": 3.875
+          },
+          {
+            "selector": "#s3-panel-in > div:nth-of-type(14) > span:nth-of-type(1)",
+            "text": "Shadow",
+            "fontPx": 15,
+            "time": 6.625,
+            "seconds": 3.875
+          },
+          {
+            "selector": "#s3-panel-in > div:nth-of-type(14) > span:nth-of-type(2)",
+            "text": "None",
+            "fontPx": 15,
+            "time": 6.625,
+            "seconds": 3.875
+          },
+          {
+            "selector": "#s3-bar-in > div:nth-of-type(1) > span:nth-of-type(1)",
+            "text": "PureCanvas",
+            "fontPx": 20,
+            "time": 6.625,
+            "seconds": 3.875
+          },
+          {
+            "selector": "#s3-caption-in",
+            "text": "TextImagesShapesIcons",
+            "fontPx": 25,
+            "time": 9.125,
+            "seconds": 1.375
+          },
+          {
+            "selector": "#s3-caption-in > b:nth-of-type(1)",
+            "text": "Pen",
+            "fontPx": 25,
+            "time": 9.125,
+            "seconds": 1.375
+          }
+        ]
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "\"Text·Images·Shapes·Icons·Pen\" (5 words) is on screen 1.40 s (±0.01 s), under its 1.50 s floor: hold it about 0.5 s + 0.3 s a word (2.00 s here) before it leaves or changes; see references/motion.md.",
+        "text": "Text·Images·Shapes·Icons·Pen",
+        "selector": "#s3-caption",
+        "dataAttributes": {},
+        "sourceFile": "compositions/s3-make.html",
+        "bbox": {
+          "x": 944.3,
+          "y": 940,
+          "width": 371.4000000000001,
+          "height": 32
+        },
+        "time": 9.102,
+        "words": 5,
+        "seconds": 1.398,
+        "floorSeconds": 1.5
+      },
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and 39 text elements stay under it for 0.5 s or more, the smallest \"3 SELECTED\" at 11 px: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "3 SELECTED",
+        "selector": "#s4-panel-in > div:nth-of-type(1) > span:nth-of-type(2)",
+        "dataAttributes": {},
+        "sourceFile": "compositions/s4-export.html",
+        "bbox": {
+          "x": 241.67,
+          "y": 102,
+          "width": 75.33,
+          "height": 14
+        },
+        "time": 10.5,
+        "times": [
+          10.5,
+          10.5,
+          10.5,
+          10.5,
+          10.5,
+          10.5,
+          10.5,
+          10.5,
+          10.5,
+          10.5,
+          10.5,
+          10.5,
+          10.5,
+          10.5,
+          10.5,
+          10.5,
+          10.5,
+          10.5,
+          10.5,
+          10.5,
+          10.5,
+          10.5,
+          10.5,
+          10.5,
+          10.5,
+          10.5,
+          11.125,
+          11.125,
+          11.125,
+          11.125,
+          11.125,
+          11.25,
+          11.25,
+          11.25,
+          11.25,
+          11.25,
+          11.75,
+          12.25,
+          12.75
+        ],
+        "fontPx": 11,
+        "floorPx": 28,
+        "seconds": 4,
+        "elements": [
+          {
+            "selector": "#s4-panel-in > div:nth-of-type(1) > span:nth-of-type(2)",
+            "text": "3 SELECTED",
+            "fontPx": 11,
+            "time": 10.5,
+            "seconds": 4
+          },
+          {
+            "selector": "div.m-head",
+            "text": "EXPORT",
+            "fontPx": 11,
+            "time": 11.125,
+            "seconds": 3.375
+          },
+          {
+            "selector": "#s4-panel-in > div:nth-of-type(1) > span:nth-of-type(1)",
+            "text": "TEXT",
+            "fontPx": 12,
+            "time": 10.5,
+            "seconds": 4
+          },
+          {
+            "selector": "#s4-menu-in > div:nth-of-type(3) > span:nth-of-type(1)",
+            "text": "SVG",
+            "fontPx": 12,
+            "time": 11.125,
+            "seconds": 3.375
+          },
+          {
+            "selector": "#s4-menu-in > div:nth-of-type(4) > span:nth-of-type(1)",
+            "text": "PNG",
+            "fontPx": 12,
+            "time": 11.125,
+            "seconds": 3.375
+          },
+          {
+            "selector": "#s4-menu-in > div:nth-of-type(5) > span:nth-of-type(1)",
+            "text": "WEBP",
+            "fontPx": 12,
+            "time": 11.25,
+            "seconds": 3.25
+          },
+          {
+            "selector": "#s4-menu-in > div:nth-of-type(7) > span:nth-of-type(1)",
+            "text": "COPY",
+            "fontPx": 12,
+            "time": 11.25,
+            "seconds": 3.25
+          },
+          {
+            "selector": "#s4-panel-in > div:nth-of-type(6) > span:nth-of-type(1)",
+            "text": "Group",
+            "fontPx": 14,
+            "time": 10.5,
+            "seconds": 4
+          },
+          {
+            "selector": "#s4-panel-in > div:nth-of-type(6) > span:nth-of-type(2)",
+            "text": "Ungroup",
+            "fontPx": 14,
+            "time": 10.5,
+            "seconds": 4
+          },
+          {
+            "selector": "#s4-bar-in > div:nth-of-type(1) > span:nth-of-type(2)",
+            "text": "Untitled",
+            "fontPx": 15,
+            "time": 10.5,
+            "seconds": 4
+          },
+          {
+            "selector": "#s4-bar-in > div:nth-of-type(1) > span:nth-of-type(5)",
+            "text": "100%",
+            "fontPx": 15,
+            "time": 10.5,
+            "seconds": 4
+          },
+          {
+            "selector": "#s4-bar-in > div:nth-of-type(2) > span:nth-of-type(1)",
+            "text": "Projects",
+            "fontPx": 15,
+            "time": 10.5,
+            "seconds": 4
+          },
+          {
+            "selector": "#s4-bar-in > div:nth-of-type(2) > span:nth-of-type(2)",
+            "text": "Present",
+            "fontPx": 15,
+            "time": 10.5,
+            "seconds": 4
+          },
+          {
+            "selector": "#s4-export",
+            "text": "Export",
+            "fontPx": 15,
+            "time": 10.5,
+            "seconds": 4
+          },
+          {
+            "selector": "#s4-panel-in > div:nth-of-type(2) > span:nth-of-type(1)",
+            "text": "Opacity",
+            "fontPx": 15,
+            "time": 10.5,
+            "seconds": 4
+          },
+          {
+            "selector": "#s4-panel-in > div:nth-of-type(2) > span:nth-of-type(2)",
+            "text": "100%",
+            "fontPx": 15,
+            "time": 10.5,
+            "seconds": 4
+          },
+          {
+            "selector": "#s4-panel-in > div:nth-of-type(4) > span:nth-of-type(1)",
+            "text": "Rotation",
+            "fontPx": 15,
+            "time": 10.5,
+            "seconds": 4
+          },
+          {
+            "selector": "#s4-panel-in > div:nth-of-type(4) > span:nth-of-type(2)",
+            "text": "0°",
+            "fontPx": 15,
+            "time": 10.5,
+            "seconds": 4
+          },
+          {
+            "selector": "#s4-panel-in > div:nth-of-type(8) > span:nth-of-type(1)",
+            "text": "Font",
+            "fontPx": 15,
+            "time": 10.5,
+            "seconds": 4
+          },
+          {
+            "selector": "#s4-panel-in > div:nth-of-type(8) > span:nth-of-type(2)",
+            "text": "Inter",
+            "fontPx": 15,
+            "time": 10.5,
+            "seconds": 4
+          },
+          {
+            "selector": "#s4-panel-in > div:nth-of-type(9) > span:nth-of-type(1)",
+            "text": "Size",
+            "fontPx": 15,
+            "time": 10.5,
+            "seconds": 4
+          },
+          {
+            "selector": "#s4-panel-in > div:nth-of-type(9) > span:nth-of-type(2)",
+            "text": "76",
+            "fontPx": 15,
+            "time": 10.5,
+            "seconds": 4
+          },
+          {
+            "selector": "#s4-panel-in > div:nth-of-type(10) > span:nth-of-type(1)",
+            "text": "Weight",
+            "fontPx": 15,
+            "time": 10.5,
+            "seconds": 4
+          },
+          {
+            "selector": "#s4-panel-in > div:nth-of-type(10) > span:nth-of-type(2)",
+            "text": "600",
+            "fontPx": 15,
+            "time": 10.5,
+            "seconds": 4
+          },
+          {
+            "selector": "#s4-panel-in > div:nth-of-type(11) > span:nth-of-type(1)",
+            "text": "Fill",
+            "fontPx": 15,
+            "time": 10.5,
+            "seconds": 4
+          },
+          {
+            "selector": "#s4-panel-in > div:nth-of-type(11) > span:nth-of-type(3)",
+            "text": "#8B8BF7",
+            "fontPx": 15,
+            "time": 10.5,
+            "seconds": 4
+          },
+          {
+            "selector": "#s4-panel-in > div:nth-of-type(13) > span:nth-of-type(1)",
+            "text": "Outline",
+            "fontPx": 15,
+            "time": 10.5,
+            "seconds": 4
+          },
+          {
+            "selector": "#s4-panel-in > div:nth-of-type(13) > span:nth-of-type(2)",
+            "text": "0 px",
+            "fontPx": 15,
+            "time": 10.5,
+            "seconds": 4
+          },
+          {
+            "selector": "#s4-panel-in > div:nth-of-type(14) > span:nth-of-type(1)",
+            "text": "Shadow",
+            "fontPx": 15,
+            "time": 10.5,
+            "seconds": 4
+          },
+          {
+            "selector": "#s4-panel-in > div:nth-of-type(14) > span:nth-of-type(2)",
+            "text": "None",
+            "fontPx": 15,
+            "time": 10.5,
+            "seconds": 4
+          },
+          {
+            "selector": "#s4-menu-in > div:nth-of-type(3) > span:nth-of-type(2)",
+            "text": "poster.svg",
+            "fontPx": 15,
+            "time": 11.125,
+            "seconds": 3.375
+          },
+          {
+            "selector": "#s4-menu-in > div:nth-of-type(4) > span:nth-of-type(2)",
+            "text": "poster.png",
+            "fontPx": 15,
+            "time": 11.125,
+            "seconds": 3.375
+          },
+          {
+            "selector": "#s4-menu-in > div:nth-of-type(5) > span:nth-of-type(2)",
+            "text": "poster.webp",
+            "fontPx": 15,
+            "time": 11.25,
+            "seconds": 3.25
+          },
+          {
+            "selector": "#s4-menu-in > div:nth-of-type(7) > span:nth-of-type(2)",
+            "text": "PNG to clipboard",
+            "fontPx": 15,
+            "time": 11.25,
+            "seconds": 3.25
+          },
+          {
+            "selector": "#s4-card1 > div:nth-of-type(1) > div:nth-of-type(3)",
+            "text": "poster.svg",
+            "fontPx": 18.89,
+            "time": 11.25,
+            "seconds": 3.25
+          },
+          {
+            "selector": "#s4-card2 > div:nth-of-type(1) > div:nth-of-type(3)",
+            "text": "poster.png",
+            "fontPx": 18.89,
+            "time": 11.75,
+            "seconds": 2.75
+          },
+          {
+            "selector": "#s4-card3 > div:nth-of-type(1) > div:nth-of-type(3)",
+            "text": "poster.webp",
+            "fontPx": 18.89,
+            "time": 12.25,
+            "seconds": 2.25
+          },
+          {
+            "selector": "#s4-bar-in > div:nth-of-type(1) > span:nth-of-type(1)",
+            "text": "PureCanvas",
+            "fontPx": 20,
+            "time": 10.5,
+            "seconds": 4
+          },
+          {
+            "selector": "#s4-sub-in",
+            "text": "Fonts and images embedded.",
+            "fontPx": 26,
+            "time": 12.75,
+            "seconds": 1.75
+          }
+        ]
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "\"Everything saves in your browser.\" (5 words) is on screen 1.10 s (±0.01 s), under its 1.50 s floor: hold it about 0.5 s + 0.3 s a word (2.00 s here) before it leaves or changes; see references/motion.md.",
+        "text": "Everything saves in your browser.",
+        "selector": "#s5-sub",
+        "dataAttributes": {},
+        "sourceFile": "compositions/s5-local.html",
+        "bbox": {
+          "x": 731.81,
+          "y": 768.03,
+          "width": 456.3800000000001,
+          "height": 39
+        },
+        "time": 16.5,
+        "words": 5,
+        "seconds": 1.102,
+        "floorSeconds": 1.5
+      },
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and \"purecanvas.app\" renders at 24 px for 2.00 s: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "purecanvas.app",
+        "selector": "#s6-call-in",
+        "dataAttributes": {},
+        "sourceFile": "compositions/s6-outro.html",
+        "bbox": {
+          "x": 872.73,
+          "y": 716.1,
+          "width": 174.52,
+          "height": 31
+        },
+        "time": 19,
+        "times": [
+          19
+        ],
+        "fontPx": 24,
+        "floorPx": 28,
+        "seconds": 2,
+        "elements": [
+          {
+            "selector": "#s6-call-in",
+            "text": "purecanvas.app",
+            "fontPx": 24,
+            "time": 19,
+            "seconds": 2
+          }
+        ]
+      }
+    ],
+    "enabled": true,
+    "step": 0.125,
+    "samples": 168
+  },
+  "audio": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "hdr": {
+    "autoPromotion": null,
+    "inspection": "available"
+  },
+  "snapshots": {
+    "enabled": false,
+    "files": [],
+    "times": [],
+    "findingFiles": []
+  }
+}

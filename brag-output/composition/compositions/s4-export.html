@@ -1,0 +1,610 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Geist";
+      src: url("assets/fonts/geist-latin-wght-normal.woff2") format("woff2");
+      font-weight: 100 900;
+      font-style: normal;
+      font-display: block;
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: #0a0a0a;
+      color: #ededed;
+      font-family: "Geist", system-ui, sans-serif;
+    }
+    #s4-grid {
+      position: absolute;
+      inset: -80px;
+      background-image: radial-gradient(circle, rgba(255, 255, 255, 0.09) 1.2px, transparent 1.35px);
+      background-size: 24px 24px;
+      background-position: 12px 12px;
+    }
+    #s4-art {
+      opacity: 0.34;
+    }
+    #s4-shape {
+      position: absolute;
+      left: 660px;
+      top: 298px;
+      width: 600px;
+      height: 332px;
+      border-radius: 40px;
+      background: #8b8bf7;
+    }
+    #s4-typed {
+      position: absolute;
+      left: 660px;
+      top: 176px;
+      font-size: 76px;
+      font-weight: 600;
+      letter-spacing: -0.035em;
+      white-space: pre;
+      color: #ededed;
+      line-height: 1.2;
+    }
+    #s4-star {
+      position: absolute;
+      left: 1292px;
+      top: 358px;
+      width: 220px;
+      height: 220px;
+      fill: #8b8bf7;
+    }
+
+    /* ---- top bar ---- */
+    #s4-bar {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1920px;
+      height: 76px;
+    }
+    #s4-bar-in {
+      position: absolute;
+      inset: 0;
+      background: #0d0d0d;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 22px;
+    }
+    .bar-left,
+    .bar-right {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .brand {
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: -0.015em;
+    }
+    .pill {
+      font-size: 15px;
+      color: #a9a9a9;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 6px 13px;
+      border-radius: 9px;
+    }
+    .iconbtn {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      color: #8f8f8f;
+    }
+    .iconbtn svg {
+      width: 21px;
+      height: 21px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .zoom {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 9px;
+      padding: 6px 11px;
+      font-size: 15px;
+      color: #cfcfcf;
+    }
+    .zoom svg {
+      width: 16px;
+      height: 16px;
+      fill: none;
+      stroke: #8f8f8f;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+    }
+    .btn {
+      height: 40px;
+      padding: 0 17px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 500;
+      display: grid;
+      place-items: center;
+    }
+    .btn.ghost {
+      color: #b9b9b9;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    #s4-export {
+      background: #ededed;
+      color: #0a0a0a;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    /* ---- properties panel ---- */
+    #s4-panel {
+      position: absolute;
+      left: 0;
+      top: 76px;
+      width: 340px;
+      height: 1004px;
+    }
+    #s4-panel-in {
+      position: absolute;
+      inset: 0;
+      background: #0b0b0b;
+      border-right: 1px solid rgba(255, 255, 255, 0.07);
+    }
+    .p-head {
+      padding: 24px 22px 10px;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+    }
+    .eyebrow {
+      font-size: 12px;
+      letter-spacing: 0.15em;
+      color: #ededed;
+      font-weight: 500;
+    }
+    .count {
+      font-size: 11px;
+      letter-spacing: 0.11em;
+      color: #8a8a8a;
+    }
+    .row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 36px;
+      padding: 0 22px;
+      font-size: 15px;
+    }
+    .lbl {
+      color: #9a9a9a;
+    }
+    .val {
+      color: #dcdcdc;
+    }
+    .slider {
+      margin: 0 22px 12px;
+      height: 6px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.09);
+      position: relative;
+    }
+    .slider i {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      border-radius: 3px;
+      background: #8b8bf7;
+    }
+    .pair {
+      display: flex;
+      gap: 9px;
+      padding: 12px 22px 0;
+    }
+    .mini {
+      flex: 1;
+      height: 42px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 9px;
+      display: grid;
+      place-items: center;
+      font-size: 14px;
+      color: #c9c9c9;
+    }
+    .sep {
+      height: 1px;
+      background: rgba(255, 255, 255, 0.07);
+      margin: 18px 22px;
+    }
+    .swatch {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      background: #8b8bf7;
+      margin-left: auto;
+      margin-right: 10px;
+    }
+
+    /* ---- tool rail ---- */
+    #s4-rail {
+      position: absolute;
+      right: 26px;
+      top: 372px;
+      width: 72px;
+    }
+    #s4-rail-in {
+      background: #131313;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .tool {
+      width: 54px;
+      height: 54px;
+      border-radius: 13px;
+      display: grid;
+      place-items: center;
+      color: #9a9a9a;
+    }
+    .tool svg {
+      width: 25px;
+      height: 25px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.7;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .tool.active {
+      background: rgba(255, 255, 255, 0.1);
+      color: #ededed;
+    }
+
+    /* ---- export menu ---- */
+    #s4-menu {
+      position: absolute;
+      right: 22px;
+      top: 88px;
+      width: 300px;
+    }
+    #s4-menu-in {
+      background: #161616;
+      border: 1px solid rgba(255, 255, 255, 0.11);
+      border-radius: 16px;
+      padding: 10px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.62);
+    }
+    .m-head {
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      color: #777;
+      padding: 8px 12px 10px;
+    }
+    .m-row {
+      height: 56px;
+      border-radius: 11px;
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      padding: 0 12px;
+      font-size: 17px;
+      color: #ededed;
+    }
+    .m-row .fmt {
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      color: #8a8a8a;
+      width: 46px;
+      font-weight: 500;
+    }
+    .m-row .file {
+      color: #9a9a9a;
+      font-size: 15px;
+    }
+    .m-row .dl {
+      margin-left: auto;
+      color: #6f6f6f;
+      font-size: 16px;
+    }
+    #s4-hover {
+      position: absolute;
+      left: 10px;
+      right: 10px;
+      top: 58px;
+      height: 56px;
+      border-radius: 11px;
+      background: rgba(255, 255, 255, 0.08);
+      opacity: 0;
+    }
+    .m-sep {
+      height: 1px;
+      background: rgba(255, 255, 255, 0.08);
+      margin: 8px 12px;
+    }
+
+    /* ---- file cards ---- */
+    .card {
+      position: absolute;
+      top: 352px;
+      width: 280px;
+      height: 196px;
+      border-radius: 18px;
+      background: #121212;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 24px;
+    }
+    .card .fmt {
+      font-size: 54px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+    .card .name {
+      position: absolute;
+      left: 24px;
+      bottom: 20px;
+      font-size: 28px;
+      color: #8a8a8a;
+    }
+    .card .check {
+      position: absolute;
+      right: 22px;
+      top: 22px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #8b8bf7;
+      display: grid;
+      place-items: center;
+    }
+    .card .check svg {
+      width: 16px;
+      height: 16px;
+      fill: none;
+      stroke: #0a0a0a;
+      stroke-width: 2.6;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    #s4-cursor {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 34px;
+      height: 34px;
+    }
+    #s4-cursor svg {
+      display: block;
+      width: 34px;
+      height: 34px;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.55));
+    }
+
+    #s4-head {
+      position: absolute;
+      left: 340px;
+      right: 0;
+      top: 700px;
+      text-align: center;
+      font-size: 62px;
+      font-weight: 600;
+      letter-spacing: -0.033em;
+      white-space: nowrap;
+    }
+    #s4-head .w {
+      display: inline-block;
+      opacity: 0;
+    }
+    #s4-sub {
+      position: absolute;
+      left: 340px;
+      right: 0;
+      top: 796px;
+      text-align: center;
+      font-size: 26px;
+      color: #8a8a8a;
+      white-space: nowrap;
+    }
+    #s4-sub-in {
+      display: inline-block;
+      opacity: 0;
+    }
+  </style>
+
+  <div id="root" data-composition-id="s4" data-width="1920" data-height="1080">
+    <div id="s4-grid" data-layout-ignore></div>
+
+    <div id="s4-art">
+      <div id="s4-shape" class="clip" data-start="0" data-duration="3.9" data-track-index="1"></div>
+      <div id="s4-typed" class="clip" data-start="0" data-duration="3.9" data-track-index="1">Design anything.</div>
+      <svg id="s4-star" class="clip" data-start="0" data-duration="3.9" data-track-index="1" viewBox="0 0 220 220">
+        <path d="M110 10 L134.7 76 L205.1 79.1 L150 123 L168.8 190.9 L110 152 L51.2 190.9 L70.1 123 L14.9 79.1 L85.3 76 Z" />
+      </svg>
+    </div>
+
+    <div id="s4-bar" class="clip" data-start="0" data-duration="3.9" data-track-index="2" data-layout-ignore>
+      <div id="s4-bar-in">
+        <div class="bar-left">
+          <svg class="logo " width="30" height="30" viewBox="0 0 96 96" aria-hidden="true">
+            <defs>
+              <linearGradient id="lg-s4" x1="17" y1="11" x2="79" y2="85" gradientUnits="userSpaceOnUse">
+                <stop offset="0" stop-color="#becde9" />
+                <stop offset="0.38" stop-color="#8e95e1" />
+                <stop offset="0.85" stop-color="#5f68c8" />
+              </linearGradient>
+            </defs>
+            <rect width="96" height="96" rx="24" fill="url(#lg-s4)" />
+            <g fill="#ffffff" opacity="0.5">
+              <circle cx="16" cy="16" r="4" /><circle cx="44" cy="16" r="4" /><circle cx="72" cy="16" r="4" />
+              <circle cx="16" cy="44" r="4" /><circle cx="72" cy="44" r="4" />
+              <circle cx="16" cy="72" r="4" /><circle cx="44" cy="72" r="4" /><circle cx="72" cy="72" r="4" />
+            </g>
+            <g transform="translate(26.7 25.6) scale(1.854) rotate(-90 12 12)" fill="#ffffff" stroke="#ffffff" stroke-width="2" stroke-linejoin="round">
+              <path d="M4.037 4.688a.495.495 0 0 1 .651-.651l16 6.5a.5.5 0 0 1-.063.947l-6.124 1.58a2 2 0 0 0-1.438 1.435l-1.579 6.126a.5.5 0 0 1-.947.063z" />
+            </g>
+          </svg>
+          <span class="brand">PureCanvas</span>
+          <span class="pill">Untitled</span>
+          <span class="iconbtn">
+            <svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5" /><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11" /></svg>
+          </span>
+          <span class="iconbtn">
+            <svg viewBox="0 0 24 24"><path d="m15 14 5-5-5-5" /><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13" /></svg>
+          </span>
+          <span class="zoom">
+            <svg viewBox="0 0 24 24"><path d="M5 12h14" /></svg>
+            100%
+            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
+          </span>
+        </div>
+        <div class="bar-right">
+          <span class="btn ghost">Projects</span>
+          <span class="btn ghost">Present</span>
+          <span class="btn" id="s4-export">Export</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="s4-panel" class="clip" data-start="0" data-duration="3.9" data-track-index="3" data-layout-ignore>
+      <div id="s4-panel-in">
+        <div class="p-head">
+          <span class="eyebrow">TEXT</span>
+          <span class="count">3 SELECTED</span>
+        </div>
+        <div class="row"><span class="lbl">Opacity</span><span class="val">100%</span></div>
+        <div class="slider"><i style="width: 100%"></i></div>
+        <div class="row"><span class="lbl">Rotation</span><span class="val">0°</span></div>
+        <div class="slider"><i style="width: 50%"></i></div>
+        <div class="pair">
+          <span class="mini">Group</span>
+          <span class="mini">Ungroup</span>
+        </div>
+        <div class="sep"></div>
+        <div class="row"><span class="lbl">Font</span><span class="val">Inter</span></div>
+        <div class="row"><span class="lbl">Size</span><span class="val">76</span></div>
+        <div class="row"><span class="lbl">Weight</span><span class="val">600</span></div>
+        <div class="row"><span class="lbl">Fill</span><span class="swatch"></span><span class="val">#8B8BF7</span></div>
+        <div class="sep"></div>
+        <div class="row"><span class="lbl">Outline</span><span class="val">0 px</span></div>
+        <div class="row"><span class="lbl">Shadow</span><span class="val">None</span></div>
+      </div>
+    </div>
+
+    <div id="s4-rail" class="clip" data-start="0" data-duration="3.9" data-track-index="4" data-layout-ignore>
+      <div id="s4-rail-in">
+        <div class="tool">
+          <svg viewBox="0 0 24 24"><path d="M4.037 4.688a.495.495 0 0 1 .651-.651l16 6.5a.5.5 0 0 1-.063.947l-6.124 1.58a2 2 0 0 0-1.438 1.435l-1.579 6.126a.5.5 0 0 1-.947.063z" /></svg>
+        </div>
+        <div class="tool active">
+          <svg viewBox="0 0 24 24"><path d="M4 7V5h16v2M12 5v15M9 20h6" /></svg>
+        </div>
+        <div class="tool">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="9" cy="9" r="1.6" /><path d="m21 15-5-5L5 21" /></svg>
+        </div>
+        <div class="tool">
+          <svg viewBox="0 0 24 24"><path d="M5 19 19 5" /><path d="M5 15v4h4M15 5h4v4" /></svg>
+        </div>
+        <div class="tool">
+          <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2.5" /></svg>
+        </div>
+        <div class="tool">
+          <svg viewBox="0 0 24 24"><path d="M8.3 10a.7.7 0 0 1-.626-1.079L11.4 3a.7.7 0 0 1 1.198-.043L16.3 8.9a.7.7 0 0 1-.572 1.1Z" /><rect x="3" y="14" width="7" height="7" rx="1" /></svg>
+        </div>
+        <div class="tool">
+          <svg viewBox="0 0 24 24"><path d="M12 20h9" /><path d="M16.4 3.6a2 2 0 0 1 2.8 2.8L7.4 18.2a2 2 0 0 1-.9.5l-2.8.8a.5.5 0 0 1-.6-.6l.8-2.8a2 2 0 0 1 .5-.9z" /></svg>
+        </div>
+      </div>
+    </div>
+
+    <div id="s4-menu" class="clip" data-start="0.36" data-duration="3.54" data-track-index="6" data-layout-allow-occlusion data-layout-ignore>
+      <div id="s4-menu-in">
+        <div class="m-head">EXPORT</div>
+        <div id="s4-hover"></div>
+        <div class="m-row"><span class="fmt">SVG</span><span class="file">poster.svg</span><span class="dl">↓</span></div>
+        <div class="m-row"><span class="fmt">PNG</span><span class="file">poster.png</span><span class="dl">↓</span></div>
+        <div class="m-row"><span class="fmt">WEBP</span><span class="file">poster.webp</span><span class="dl">↓</span></div>
+        <div class="m-sep"></div>
+        <div class="m-row"><span class="fmt" style="width: auto">COPY</span><span class="file">PNG to clipboard</span></div>
+      </div>
+    </div>
+
+    <div id="s4-card1" class="clip" data-start="0.6" data-duration="3.3" data-track-index="7">
+      <div class="card" style="left: 686px">
+        <div class="fmt">SVG</div>
+        <div class="check"><svg viewBox="0 0 24 24"><path d="m4 12 5.5 5.5L20 6" /></svg></div>
+        <div class="name">poster.svg</div>
+      </div>
+    </div>
+    <div id="s4-card2" class="clip" data-start="1.1" data-duration="2.8" data-track-index="7">
+      <div class="card" style="left: 990px">
+        <div class="fmt">PNG</div>
+        <div class="check"><svg viewBox="0 0 24 24"><path d="m4 12 5.5 5.5L20 6" /></svg></div>
+        <div class="name">poster.png</div>
+      </div>
+    </div>
+    <div id="s4-card3" class="clip" data-start="1.6" data-duration="2.3" data-track-index="7">
+      <div class="card" style="left: 1294px">
+        <div class="fmt">WEBP</div>
+        <div class="check"><svg viewBox="0 0 24 24"><path d="m4 12 5.5 5.5L20 6" /></svg></div>
+        <div class="name">poster.webp</div>
+      </div>
+    </div>
+
+    <div id="s4-cursor" class="clip" data-start="0" data-duration="1.5" data-track-index="8">
+      <svg viewBox="0 0 24 24" fill="#ededed" stroke="#0a0a0a" stroke-width="1.1" stroke-linejoin="round">
+        <path d="M4.037 4.688a.495.495 0 0 1 .651-.651l16 6.5a.5.5 0 0 1-.063.947l-6.124 1.58a2 2 0 0 0-1.438 1.435l-1.579 6.126a.5.5 0 0 1-.947.063z" />
+      </svg>
+    </div>
+
+    <div id="s4-head" class="clip" data-start="1.82" data-duration="2.08" data-track-index="9">
+      <span class="w">Export</span> <span class="w">SVG,</span> <span class="w">PNG,</span> <span class="w">WEBP.</span>
+    </div>
+    <div id="s4-sub" class="clip" data-start="2.08" data-duration="1.82" data-track-index="9">
+      <span id="s4-sub-in">Fonts and images embedded.</span>
+    </div>
+  </div>
+
+  <script>
+    const tl = gsap.timeline({ paused: true });
+
+    tl.fromTo("#s4-cursor", { x: 1620, y: 780, opacity: 0 }, { x: 1620, y: 780, opacity: 1, duration: 0.12, ease: "power2.out" }, 0.02);
+    tl.to("#s4-cursor", { x: 1842, y: 30, duration: 0.34, ease: "power2.inOut" }, 0.14);
+
+    tl.to("#s4-export", { backgroundColor: "#c9c9c9", duration: 0.08, ease: "power2.out" }, 0.34);
+    tl.to("#s4-export", { backgroundColor: "#ededed", duration: 0.16, ease: "power2.out" }, 0.42);
+
+    tl.fromTo("#s4-menu-in", { opacity: 0, y: -16, scale: 0.97, transformOrigin: "100% 0%" }, { opacity: 1, y: 0, scale: 1, duration: 0.3, ease: "power3.out" }, 0.38);
+    tl.fromTo("#s4-menu-in .m-row, #s4-menu-in .m-head", { opacity: 0, y: -6 }, { opacity: 1, y: 0, duration: 0.26, ease: "power2.out", stagger: 0.035 }, 0.46);
+    tl.fromTo("#s4-hover", { opacity: 0 }, { opacity: 1, duration: 0.18, ease: "power2.out" }, 0.9);
+
+    tl.fromTo("#s4-card1 .card", { opacity: 0, y: 34, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: "back.out(1.6)" }, 0.6);
+    tl.fromTo("#s4-card2 .card", { opacity: 0, y: 34, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: "back.out(1.6)" }, 1.1);
+    tl.fromTo("#s4-card3 .card", { opacity: 0, y: 34, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: "back.out(1.6)" }, 1.6);
+    tl.fromTo(".card .check", { scale: 0 }, { scale: 1, duration: 0.3, ease: "back.out(2.4)", stagger: 0.5 }, 0.72);
+
+    tl.to("#s4-cursor", { opacity: 0, duration: 0.2, ease: "power2.in" }, 1.2);
+
+    tl.fromTo(
+      "#s4-head .w",
+      { opacity: 0, y: 20, filter: "blur(10px)" },
+      { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.44, ease: "expo.out", stagger: 0.05 },
+      1.84,
+    );
+    tl.fromTo("#s4-sub-in", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.38, ease: "power3.out" }, 2.1);
+
+    window.__timelines["s4"] = tl;
+    tl.seek(0);
+  </script>
+</template>

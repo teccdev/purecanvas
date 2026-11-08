@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import type { AnalyticsStats, PageviewData, RecentVisit } from './types'
-import { buildStats, lastNDates } from './stats'
+import type { AnalyticsStats, PageviewData, RecentVisit } from './types.js'
+import { buildStats, lastNDates } from './stats.js'
 
 /**
  * Local development store. Never used on Vercel — production must use Redis so

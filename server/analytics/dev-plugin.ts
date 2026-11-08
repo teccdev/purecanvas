@@ -6,7 +6,7 @@ import {
   handleLogin,
   handleLogout,
   handleStats,
-} from './http'
+} from './http.js'
 
 type Middlewares = ViteDevServer['middlewares']
 

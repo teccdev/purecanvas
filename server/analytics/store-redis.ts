@@ -1,6 +1,6 @@
-import type { AnalyticsStats, PageviewData, RecentVisit } from './types'
-import { redisCommand, redisPipeline } from './redis'
-import { buildStats, fieldsFromReply, lastNDates, parseRecent, toNumber } from './stats'
+import type { AnalyticsStats, PageviewData, RecentVisit } from './types.js'
+import { redisCommand, redisPipeline } from './redis.js'
+import { buildStats, fieldsFromReply, lastNDates, parseRecent, toNumber } from './stats.js'
 
 /**
  * Redis layout (one small day-hash per day keeps the dashboard cheap):

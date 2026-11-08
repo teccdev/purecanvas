@@ -1,4 +1,4 @@
-import type { AnalyticsStats, CountItem, DailyPoint, RecentVisit } from './types'
+import type { AnalyticsStats, CountItem, DailyPoint, RecentVisit } from './types.js'
 
 const MAX_LIST_ITEMS = 8
 const FIELD_PREFIXES = new Set([

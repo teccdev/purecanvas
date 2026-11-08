@@ -1,5 +1,5 @@
-import type { AnalyticsStats, CountItem } from './types'
-import { getEnvLabel } from './env'
+import type { AnalyticsStats, CountItem } from './types.js'
+import { getEnvLabel } from './env.js'
 
 const RANGE_LABELS: Record<number, string> = {
   1: 'Today',

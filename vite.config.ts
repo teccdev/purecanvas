@@ -3,7 +3,7 @@ import path from 'node:path'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig, loadEnv, type Plugin } from 'vite'
-import { analyticsDevPlugin } from './server/analytics/dev-plugin'
+import { analyticsDevPlugin } from './server/analytics/dev-plugin.js'
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {

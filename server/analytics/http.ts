@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
-import { getAnalyticsEnv } from './env'
+import { getAnalyticsEnv } from './env.js'
 import {
   clearAuthCookie,
   clearLoginFailures,
@@ -10,14 +10,14 @@ import {
   passwordConfigured,
   recordLoginFailure,
   serializeAuthCookie,
-} from './auth'
-import { getStore } from './store'
+} from './auth.js'
+import { getStore } from './store.js'
 import {
   renderDashboard,
   renderDashboardError,
   renderLogin,
   renderSetup,
-} from './dashboard'
+} from './dashboard.js'
 
 const MAX_BODY_BYTES = 8 * 1024
 const VALID_RANGES = new Set([1, 7, 30])

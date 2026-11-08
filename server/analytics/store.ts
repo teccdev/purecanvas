@@ -1,6 +1,6 @@
-import { getRedisConfig, isVercel } from './env'
-import { createLocalStore, type LocalStore } from './store-local'
-import { createRedisStore, type RedisStore } from './store-redis'
+import { getRedisConfig, isVercel } from './env.js'
+import { createLocalStore, type LocalStore } from './store-local.js'
+import { createRedisStore, type RedisStore } from './store-redis.js'
 
 export type AnalyticsStore = RedisStore | LocalStore
 

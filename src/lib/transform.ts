@@ -1,5 +1,5 @@
 import type { Element, StrokeElement, TextElement } from "./types"
-import { DEG, boundsOfPoints, rotatePoint, type Point } from "./geometry"
+import { DEG, boundsOfPoints, getBounds, rotatePoint, type Point } from "./geometry"
 
 export function translateElement(el: Element, dx: number, dy: number): Element {
   if (el.type === "line") {
@@ -84,6 +84,69 @@ export function scaleElementAbout(
     }
   }
   return { ...el, x: bx, y: by, width: bw, height: bh }
+}
+
+/**
+ * Set an element's overall width and/or height. Box elements keep their
+ * top-left corner fixed. Lines are point-based, so their endpoints are scaled
+ * about the current bounds' top-left (and the stored box is kept in sync).
+ * Pass `undefined` to leave an axis unchanged.
+ */
+export function setElementSize(
+  el: Element,
+  width?: number,
+  height?: number
+): Element {
+  if (el.type === "line") {
+    const b = getBounds(el)
+    let { x1, y1, x2, y2 } = el
+
+    if (width !== undefined) {
+      const w = Math.max(0, width)
+      if (b.width > 1e-6) {
+        const sx = w / b.width
+        x1 = b.x + (x1 - b.x) * sx
+        x2 = b.x + (x2 - b.x) * sx
+      } else if (w > 0) {
+        // A perfectly vertical line has no horizontal extent to scale from,
+        // so extend the second endpoint instead.
+        x2 = x1 + (Math.sign(x2 - x1) || 1) * w
+      } else {
+        x2 = x1
+      }
+    }
+
+    if (height !== undefined) {
+      const h = Math.max(0, height)
+      if (b.height > 1e-6) {
+        const sy = h / b.height
+        y1 = b.y + (y1 - b.y) * sy
+        y2 = b.y + (y2 - b.y) * sy
+      } else if (h > 0) {
+        y2 = y1 + (Math.sign(y2 - y1) || 1) * h
+      } else {
+        y2 = y1
+      }
+    }
+
+    return {
+      ...el,
+      x1,
+      y1,
+      x2,
+      y2,
+      x: Math.min(x1, x2),
+      y: Math.min(y1, y2),
+      width: Math.abs(x2 - x1),
+      height: Math.abs(y2 - y1),
+    }
+  }
+
+  return {
+    ...el,
+    width: width !== undefined ? Math.max(1, width) : el.width,
+    height: height !== undefined ? Math.max(1, height) : el.height,
+  }
 }
 
 export interface HandleAnchor {

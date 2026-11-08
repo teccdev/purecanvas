@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useRef, type ReactNode } from "react";
+import {
+    useCallback,
+    useEffect,
+    useRef,
+    useState,
+    type ReactNode,
+} from "react";
 import { useDoc } from "@/store/useDoc";
 import { useUI } from "@/store/useUI";
 import { FONTS, ensureFontLoaded } from "@/lib/fonts";
@@ -40,6 +46,8 @@ import type {
     ShapeKind,
 } from "@/lib/types";
 import { defaultGradient, gradientCss, makeStopColor } from "@/lib/gradient";
+import { getBounds } from "@/lib/geometry";
+import { setElementSize } from "@/lib/transform";
 import { defaultShadow } from "@/lib/shadow";
 import { cn } from "@/lib/utils";
 
@@ -198,6 +206,101 @@ function SliderField({
                     const next = Array.isArray(v) ? v[0] : v;
                     if (typeof next === "number") onChange(next);
                 }}
+            />
+        </div>
+    );
+}
+
+/** Element types whose overall width/height can be edited from the panel. */
+function supportsSize(el: Element): boolean {
+    return (
+        el.type === "line" ||
+        el.type === "text" ||
+        el.type === "image" ||
+        el.type === "shape" ||
+        el.type === "icon"
+    );
+}
+
+/** Displayed width/height: lines derive theirs from their endpoints. */
+function elementSize(el: Element): { width: number; height: number } {
+    return el.type === "line" ? getBounds(el) : el;
+}
+
+function formatSize(value: number): string {
+    return String(Math.round(value * 100) / 100);
+}
+
+/**
+ * Numeric textbox for a single dimension. Keeps a local draft while focused so
+ * typing doesn't push a history entry per keystroke; commits on blur or Enter.
+ */
+function SizeField({
+    label,
+    value,
+    min = 1,
+    onChange,
+}: {
+    label: string;
+    value: number;
+    /** Lowest accepted value; lines allow 0 for flat/vertical segments. */
+    min?: number;
+    onChange: (v: number) => void;
+}) {
+    const [draft, setDraft] = useState(formatSize(value));
+    const focusedRef = useRef(false);
+    const cancelRef = useRef(false);
+
+    // Reflect external changes (canvas resize, undo) unless the user is typing.
+    useEffect(() => {
+        if (!focusedRef.current) setDraft(formatSize(value));
+    }, [value]);
+
+    const commit = () => {
+        const next = parseFloat(draft);
+        if (!Number.isFinite(next)) {
+            setDraft(formatSize(value));
+            return;
+        }
+        const clamped = Math.max(min, next);
+        setDraft(formatSize(clamped));
+        if (Math.abs(clamped - value) > 0.001) onChange(clamped);
+    };
+
+    return (
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+            <Label className="text-xs text-muted-foreground">{label}</Label>
+            <Input
+                type="number"
+                inputMode="decimal"
+                min={min}
+                step={1}
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                onFocus={() => {
+                    focusedRef.current = true;
+                }}
+                onBlur={() => {
+                    focusedRef.current = false;
+                    // Escape blurs the field too; don't commit the abandoned draft.
+                    if (cancelRef.current) {
+                        cancelRef.current = false;
+                        setDraft(formatSize(value));
+                        return;
+                    }
+                    commit();
+                }}
+                onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                        e.preventDefault();
+                        e.currentTarget.blur();
+                    } else if (e.key === "Escape") {
+                        cancelRef.current = true;
+                        e.currentTarget.blur();
+                    }
+                }}
+                aria-label={label}
+                className="h-7 font-mono text-xs"
             />
         </div>
     );
@@ -587,6 +690,11 @@ export function PropertiesPanel() {
         (el) => el.type !== "line" && el.type !== "stroke",
     );
 
+    // Width/height apply to box elements and lines; lines derive theirs from
+    // their endpoints rather than the stored box.
+    const sizeTarget = selected.find(supportsSize);
+    const sizeBounds = sizeTarget ? elementSize(sizeTarget) : null;
+
     const body = (
         <>
             {selected.length > 0 ? (
@@ -738,6 +846,45 @@ export function PropertiesPanel() {
                                 </Button>
                             </div>
                         </Section>
+
+                        {sizeBounds && (
+                            <Section title="Size">
+                                <div className="flex items-start gap-2">
+                                    <SizeField
+                                        label="Width"
+                                        value={sizeBounds.width}
+                                        min={
+                                            sizeTarget?.type === "line" ? 0 : 1
+                                        }
+                                        onChange={(v) =>
+                                            patchSelected((el) =>
+                                                supportsSize(el)
+                                                    ? setElementSize(el, v)
+                                                    : el,
+                                            )
+                                        }
+                                    />
+                                    <SizeField
+                                        label="Height"
+                                        value={sizeBounds.height}
+                                        min={
+                                            sizeTarget?.type === "line" ? 0 : 1
+                                        }
+                                        onChange={(v) =>
+                                            patchSelected((el) =>
+                                                supportsSize(el)
+                                                    ? setElementSize(
+                                                          el,
+                                                          undefined,
+                                                          v,
+                                                      )
+                                                    : el,
+                                            )
+                                        }
+                                    />
+                                </div>
+                            </Section>
+                        )}
 
                         {kind === "text" && (
                             <Section title="Text">

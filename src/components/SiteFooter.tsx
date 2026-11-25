@@ -22,7 +22,7 @@ export function SiteFooter() {
                 ·
             </span>
             <a
-                href="mailto:teccin+purecanvas@proton.me?subject=PureCanvas%20Feature%20Request"
+                href="mailto:help@purecanvas.app?subject=PureCanvas%20Feature%20Request"
                 className={LINK_CLASS_NAME}
             >
                 Feature request

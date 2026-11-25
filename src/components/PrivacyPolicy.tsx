@@ -110,9 +110,9 @@ export function PrivacyPolicy() {
                         Questions?{" "}
                         <a
                             className="underline underline-offset-4 hover:text-foreground"
-                            href="mailto:teccin+purecanvas@proton.me"
+                            href="mailto:help@purecanvas.app"
                         >
-                            teccin+purecanvas@proton.me
+                            help@purecanvas.app
                         </a>
                     </p>
                 </div>

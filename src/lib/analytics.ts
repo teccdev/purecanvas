@@ -2,6 +2,7 @@ const ENDPOINT = '/api/analytics/collect'
 const VISITOR_KEY = 'pc:analytics:visitor'
 const SESSION_KEY = 'pc:analytics:session'
 const META_KEY = 'pc:analytics:meta'
+const OPT_OUT_KEY = 'pc:analytics:optout'
 const PRODUCTION_HOSTS = new Set(['purecanvas.app', 'www.purecanvas.app'])
 const UTM_KEYS = ['source', 'medium', 'campaign', 'term', 'content'] as const
 
@@ -27,6 +28,7 @@ interface SessionMeta {
 }
 
 let initialized = false
+let disabled = false
 let meta: SessionMeta | null = null
 let engagementTimer: number | null = null
 
@@ -47,6 +49,53 @@ function safeSet(storage: Storage, key: string, value: string): void {
   }
 }
 
+function optedOut(): boolean {
+  try {
+    return localStorage.getItem(OPT_OUT_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+/**
+ * True when this browser has asked us to stop recording usage data. Mirrors the
+ * Do Not Track / Global Privacy Control checks so the UI and the tracker agree.
+ */
+export function isDataSharingEnabled(): boolean {
+  return !disabled && !optedOut()
+}
+
+/**
+ * Stores the visitor's choice and, when turning sharing off, forgets the
+ * identifiers attached to this browser. Re-enabling takes effect on the next
+ * page load.
+ */
+export function setDataSharingEnabled(enabled: boolean): void {
+  try {
+    if (enabled) {
+      localStorage.removeItem(OPT_OUT_KEY)
+    } else {
+      localStorage.setItem(OPT_OUT_KEY, '1')
+      localStorage.removeItem(VISITOR_KEY)
+      sessionStorage.removeItem(SESSION_KEY)
+      sessionStorage.removeItem(META_KEY)
+    }
+  } catch {
+    // Storage blocked: the in-memory flag below still stops this page.
+  }
+  if (enabled) disabled = false
+  else stopTracking()
+}
+
+function stopTracking(): void {
+  disabled = true
+  meta = null
+  if (engagementTimer !== null) {
+    if (typeof window !== 'undefined') window.clearTimeout(engagementTimer)
+    engagementTimer = null
+  }
+}
+
 function randomId(): string {
   const cryptoApi = globalThis.crypto
   if (cryptoApi?.randomUUID) return cryptoApi.randomUUID()
@@ -59,6 +108,7 @@ function randomId(): string {
 
 function shouldTrack(): boolean {
   if (typeof window === 'undefined') return false
+  if (optedOut()) return false
 
   const hostname = window.location.hostname
   const isLocal =
@@ -136,6 +186,7 @@ function saveMeta(): void {
 }
 
 function send(payload: Record<string, unknown>, beacon = false): void {
+  if (disabled || optedOut()) return
   const body = JSON.stringify(payload)
   try {
     if (beacon && navigator.sendBeacon) {

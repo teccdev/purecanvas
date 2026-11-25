@@ -1,4 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+    isDataSharingEnabled,
+    setDataSharingEnabled,
+} from "@/lib/analytics";
 
 /**
  * Short, plain-language privacy policy. Linked from the footer at /privacy.
@@ -6,6 +11,8 @@ import { useEffect } from "react";
  * IP addresses or cross-site identifiers.
  */
 export function PrivacyPolicy() {
+    const [sharing, setSharing] = useState(isDataSharingEnabled);
+
     useEffect(() => {
         const previous = document.title;
         document.title = "Privacy Policy — PureCanvas";
@@ -69,6 +76,36 @@ export function PrivacyPolicy() {
                         requests. Aggregated analytics are kept for up to 13
                         months.
                     </p>
+                    <div className="rounded-xl border border-border bg-muted/40 p-5 sm:p-6">
+                        {sharing ? (
+                            <Button
+                                className="h-12 w-full text-[15px] font-semibold"
+                                onClick={() => {
+                                    setDataSharingEnabled(false);
+                                    setSharing(false);
+                                }}
+                            >
+                                Turn off all data sharing
+                            </Button>
+                        ) : (
+                            <>
+                                <p className="text-sm text-foreground" role="status">
+                                    Data sharing is off. New visits are not
+                                    recorded.
+                                </p>
+                                <button
+                                    type="button"
+                                    className="mt-2 text-xs text-muted-foreground underline underline-offset-4 transition-colors hover:text-foreground"
+                                    onClick={() => {
+                                        setDataSharingEnabled(true);
+                                        setSharing(true);
+                                    }}
+                                >
+                                    Turn data sharing back on
+                                </button>
+                            </>
+                        )}
+                    </div>
                     <p>
                         Questions?{" "}
                         <a

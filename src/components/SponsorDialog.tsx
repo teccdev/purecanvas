@@ -50,11 +50,11 @@ export function SponsorDialog({
                         <p>
                             To purchase or learn more, please email{" "}
                             <a
-                                href="mailto:teccin+purecanvas@proton.me?subject=PureCanvas%20Sponsorship"
+                                href="mailto:sponsor@purecanvas.app?subject=PureCanvas%20Sponsorship"
                                 target="_blank"
                                 className="underline decoration-muted-foreground hover:decoration-foreground"
                             >
-                                teccin@proton.me
+                                sponsor@purecanvas.app
                             </a>
                             .
                         </p>
